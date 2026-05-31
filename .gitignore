@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# next.js build output
+.next/
+out/
+
+# env / secrets
+.env
+.env*.local
+
+# build info
+*.tsbuildinfo
+next-env.d.ts.bak
+
+# os / editor
+.DS_Store
+Thumbs.db
+nul
+
+# local agent settings (may contain secrets)
+.claude/
+
+# dev/test artifacts (screenshots from playwright drivers)
+web/scripts/_*.png
+
+# playwright persistent browser profile (contains session cookies)
+web/scripts/.userdata/

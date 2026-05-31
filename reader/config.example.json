@@ -1,0 +1,8 @@
+{
+  "api_url": "https://YOUR-DOMAIN/api/ingest",
+  "secret": "여기에-web의-INGEST_SECRET과-동일한-값",
+  "room_name": "뜬구름클럽 오픈채팅방 이름",
+  "notice_keyword": "공지",
+  "poll_interval": 8,
+  "author_default": "익명"
+}
