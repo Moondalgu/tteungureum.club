@@ -1,0 +1,4 @@
+# dev/test artifacts — not needed for deployment
+scripts/
+node_modules/
+.next/
