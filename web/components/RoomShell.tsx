@@ -71,12 +71,8 @@ export function RoomShell({
     }
   }, [roomId]);
 
-  // 로그인 사용자는 입장 시 자동으로 LiveKit 방에 연결(마이크는 끈 채 청취/구독만).
-  // 이렇게 해야 화면공유 트랙이 모두에게 즉시 전달된다.
-  useEffect(() => {
-    if (isLoggedIn && !conn && !loading) join();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn]);
+  // 음성/화면공유는 옵션. 입장 시 자동 연결하지 않고 "음성 참여" 버튼으로만 연결한다.
+  // 채팅은 LiveKit 연결과 무관하게 항상 동작한다(아래 rail 참고).
 
   // 화이트보드 열림 상태 공유: 누가 도구를 꺼내면 모두 화면에 보이게 한다.
   useEffect(() => {
