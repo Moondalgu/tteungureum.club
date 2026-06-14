@@ -25,7 +25,6 @@ export function Whiteboard({
   const [color, setColor] = useState(COLORS[0]);
   const [size, setSize] = useState(4);
   const [tool, setTool] = useState<"pen" | "eraser">("pen");
-  const [status, setStatus] = useState("연결 중...");
 
   // 한 획 그리기 (erase=true 면 지우개: 픽셀 제거)
   function drawStroke(ctx: CanvasRenderingContext2D, s: StrokePayload) {
@@ -73,9 +72,7 @@ export function Whiteboard({
       .on("broadcast", { event: "clear" }, () => {
         ctx.clearRect(0, 0, W, H);
       })
-      .subscribe((s) => {
-        setStatus(s === "SUBSCRIBED" ? "실시간 연결됨" : "연결 중...");
-      });
+      .subscribe();
     channelRef.current = channel;
 
     return () => {
@@ -192,7 +189,6 @@ export function Whiteboard({
         <button className="btn" onClick={clearBoard}>
           전체 지우기
         </button>
-        <span className="small muted">{status}</span>
       </div>
       <canvas
         ref={canvasRef}

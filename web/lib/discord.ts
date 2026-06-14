@@ -55,6 +55,19 @@ export async function createDiscordChannel(name: string): Promise<CreatedChannel
   };
 }
 
+// 채널 삭제 (방 삭제 시 정리). best-effort — 실패해도 방 삭제는 진행.
+export async function deleteDiscordChannel(channelId: string): Promise<void> {
+  const token = process.env.DISCORD_BOT_TOKEN;
+  if (!token) return;
+  const res = await fetch(`${DISCORD_API}/channels/${channelId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bot ${token}` },
+  });
+  if (!res.ok) {
+    console.error("[discord delete]", res.status, await res.text());
+  }
+}
+
 // 채널에 메시지 전송 (날짜 확정 알림 등)
 export async function postDiscordMessage(
   channelId: string,

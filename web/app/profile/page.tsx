@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -15,6 +16,11 @@ export default function ProfilePage() {
   const [nickname, setNickname] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
+
+  // 회원 탈퇴 확인 다이얼로그
+  const [confirmLeave, setConfirmLeave] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -72,6 +78,24 @@ export default function ProfilePage() {
     }
     setMsg("저장되었습니다.");
     router.refresh();
+  }
+
+  async function deleteAccount() {
+    setLeaving(true);
+    setLeaveError("");
+    try {
+      const res = await fetch("/api/account/delete", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? `탈퇴 실패 (${res.status})`);
+      }
+      await supabase.auth.signOut();
+      router.replace("/");
+      router.refresh();
+    } catch (e) {
+      setLeaveError(e instanceof Error ? e.message : "탈퇴에 실패했어요.");
+      setLeaving(false);
+    }
   }
 
   if (loading) {
@@ -133,6 +157,38 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      <div
+        className="card"
+        style={{ display: "grid", gap: 10, maxWidth: 480, marginTop: 16 }}
+      >
+        <h3 style={{ margin: 0, fontSize: 15 }}>회원 탈퇴</h3>
+        <p className="small muted" style={{ margin: 0 }}>
+          계정과 프로필이 삭제되며 되돌릴 수 없어요.
+        </p>
+        <div className="row" style={{ justifyContent: "flex-end" }}>
+          <button className="btn danger" onClick={() => {
+            setLeaveError("");
+            setConfirmLeave(true);
+          }}>
+            회원 탈퇴
+          </button>
+        </div>
+      </div>
+
+      <ConfirmDialog
+        open={confirmLeave}
+        title="정말 탈퇴할까요?"
+        message="계정과 프로필이 영구 삭제됩니다. 되돌릴 수 없어요."
+        confirmText="탈퇴"
+        danger
+        busy={leaving}
+        error={leaveError}
+        onConfirm={deleteAccount}
+        onCancel={() => {
+          if (!leaving) setConfirmLeave(false);
+        }}
+      />
     </main>
   );
 }

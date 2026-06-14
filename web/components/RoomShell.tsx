@@ -5,9 +5,10 @@ import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import { RoomTopics } from "./RoomTopics";
 import { Whiteboard } from "./Whiteboard";
 import { FloatingTimer } from "./Countdown";
-import { VoiceRail, VoiceChat, ShareStage } from "./VoiceRoom";
+import { VoiceRail, ShareStage } from "./VoiceRoom";
+import { RoomChat } from "./RoomChat";
 import { createClient } from "@/lib/supabase/client";
-import type { RoomTopic, Stroke, Topic } from "@/lib/types";
+import type { RoomMessage, RoomTopic, Stroke, Topic } from "@/lib/types";
 
 // 방 화면 오케스트레이터.
 // - 좌측 스테이지: 주제 히어로(상시) + 화면공유 영상/화이트보드(소환 시)
@@ -21,12 +22,18 @@ export function RoomShell({
   boxTopics,
   strokes,
   isLoggedIn,
+  userId,
+  nickname,
+  initialMessages,
 }: {
   roomId: number;
   initialTopics: RoomTopic[];
   boxTopics: Topic[];
   strokes: Stroke[];
   isLoggedIn: boolean;
+  userId: string | null;
+  nickname: string | null;
+  initialMessages: RoomMessage[];
 }) {
   const [conn, setConn] = useState<{ token: string; serverUrl: string } | null>(
     null
@@ -115,7 +122,7 @@ export function RoomShell({
       {wbOpen && (
         <div className="card">
           <div className="row spread" style={{ marginBottom: 10 }}>
-            <h4 style={{ margin: 0, fontSize: 13 }}>🎨 화이트보드 (실시간 공동편집)</h4>
+            <h4 style={{ margin: 0, fontSize: 13 }}>🎨 화이트보드</h4>
             <button className="btn sm" onClick={() => setWhiteboard(false)}>
               ✕ 닫기
             </button>
@@ -126,31 +133,38 @@ export function RoomShell({
     </div>
   );
 
-  const rail = conn ? (
+  // 채팅은 음성 연결과 무관하게 항상 표시한다.
+  const rail = (
     <div className="room-rail">
-      <VoiceRail />
-      <VoiceChat />
-    </div>
-  ) : (
-    <div className="room-rail">
-      <div className="card grid" style={{ gap: 10 }}>
-        <h4 style={{ margin: 0, fontSize: 13 }}>🎙️ 음성 · 화면공유</h4>
-        {isLoggedIn ? (
-          <>
-            <span className="muted small">마이크와 화면공유로 함께 토론해요</span>
-            {error && (
-              <span className="small" style={{ color: "var(--pink-deep)" }}>
-                {error}
-              </span>
-            )}
-            <button className="btn primary" onClick={join} disabled={loading}>
-              {loading ? "연결 중..." : "음성 참여"}
-            </button>
-          </>
-        ) : (
-          <span className="muted small">로그인하면 음성 토론에 참여할 수 있어요.</span>
-        )}
-      </div>
+      {conn ? (
+        <VoiceRail />
+      ) : (
+        <div className="card grid" style={{ gap: 10 }}>
+          <h4 style={{ margin: 0, fontSize: 13 }}>🎙️ 음성 · 화면공유</h4>
+          {isLoggedIn ? (
+            <>
+              <span className="muted small">마이크와 화면공유로 함께 토론해요</span>
+              {error && (
+                <span className="small" style={{ color: "var(--pink-deep)" }}>
+                  {error}
+                </span>
+              )}
+              <button className="btn primary" onClick={join} disabled={loading}>
+                {loading ? "연결 중..." : "음성 참여"}
+              </button>
+            </>
+          ) : (
+            <span className="muted small">로그인하면 음성 토론에 참여할 수 있어요.</span>
+          )}
+        </div>
+      )}
+      <RoomChat
+        roomId={roomId}
+        userId={userId}
+        nickname={nickname}
+        initialMessages={initialMessages}
+        isLoggedIn={isLoggedIn}
+      />
     </div>
   );
 

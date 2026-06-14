@@ -46,6 +46,15 @@ export interface Room {
   created_at: string;
 }
 
+export interface RoomMessage {
+  id: number;
+  room_id: number;
+  user_id: string | null;
+  name: string;
+  content: string;
+  created_at: string;
+}
+
 export interface RoomTopic {
   id: number;
   room_id: number;

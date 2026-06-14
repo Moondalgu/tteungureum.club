@@ -88,6 +88,18 @@ create table if not exists public.strokes (
 );
 create index if not exists strokes_room_idx on public.strokes(room_id, id);
 
+-- ─────────────────────── room_messages ──────────────────────
+-- 방 채팅(영구 저장). 방 삭제 시 함께 삭제(cascade).
+create table if not exists public.room_messages (
+  id bigint generated always as identity primary key,
+  room_id bigint not null references public.rooms(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete set null,
+  name text not null default '익명',
+  content text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists room_messages_room_idx on public.room_messages(room_id, id);
+
 -- ───────────── 신규 가입 시 프로필 자동 생성 ─────────────
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
@@ -115,6 +127,7 @@ alter table public.meeting_votes enable row level security;
 alter table public.rooms         enable row level security;
 alter table public.room_topics   enable row level security;
 alter table public.strokes       enable row level security;
+alter table public.room_messages enable row level security;
 
 -- 읽기 공개
 create policy "p_read"  on public.profiles      for select using (true);
@@ -125,6 +138,7 @@ create policy "mv_read" on public.meeting_votes for select using (true);
 create policy "r_read"  on public.rooms         for select using (true);
 create policy "rt_read" on public.room_topics   for select using (true);
 create policy "s_read"  on public.strokes       for select using (true);
+create policy "rm_read" on public.room_messages for select using (true);
 
 -- 프로필: 본인만
 create policy "p_ins" on public.profiles for insert with check (auth.uid() = id);
@@ -151,7 +165,11 @@ create policy "rt_del" on public.room_topics for delete using (auth.uid() is not
 create policy "s_ins" on public.strokes for insert with check (auth.uid() is not null);
 create policy "s_del" on public.strokes for delete using (auth.uid() is not null);
 
--- 방/모임 확정은 서버(service_role)에서 처리 → RLS 우회.
+-- 방 채팅: 로그인 사용자가 본인 이름으로만 작성
+create policy "rm_ins" on public.room_messages for insert with check (auth.uid() = user_id);
+
+-- 방/모임 확정·삭제는 서버(service_role)에서 처리 → RLS 우회.
 
 -- Realtime publication
 alter publication supabase_realtime add table public.strokes;
+alter publication supabase_realtime add table public.room_messages;

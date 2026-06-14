@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { RoomShell } from "@/components/RoomShell";
-import type { RoomTopic, Stroke, Topic } from "@/lib/types";
+import type { RoomMessage, RoomTopic, Stroke, Topic } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +45,24 @@ export default async function RoomPage({
     .eq("room_id", roomId)
     .order("id", { ascending: true });
 
+  // 채팅 기록 (영구 저장)
+  const { data: messages } = await supabase
+    .from("room_messages")
+    .select("id, room_id, user_id, name, content, created_at")
+    .eq("room_id", roomId)
+    .order("id", { ascending: true });
+
+  // 로그인 사용자 닉네임 (채팅 표시용)
+  let nickname: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("nickname")
+      .eq("id", user.id)
+      .single();
+    nickname = profile?.nickname ?? null;
+  }
+
   return (
     <main className="room-page">
       <div className="rhead">
@@ -59,6 +77,9 @@ export default async function RoomPage({
         boxTopics={(box ?? []) as Topic[]}
         strokes={(strokes ?? []) as Stroke[]}
         isLoggedIn={!!user}
+        userId={user?.id ?? null}
+        nickname={nickname}
+        initialMessages={(messages ?? []) as RoomMessage[]}
       />
     </main>
   );

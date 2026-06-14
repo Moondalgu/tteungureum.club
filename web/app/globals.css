@@ -175,7 +175,36 @@ header.topbar {
 .btn.cyan { background: var(--cyan); }
 .btn.sm { padding: 5px 9px; font-size: 12px; box-shadow: 2px 2px 0 var(--ink); }
 .btn.sm:active { box-shadow: 0 0 0 var(--ink); }
+.btn.danger { background: var(--pink-deep); color: #fff; }
+.btn.danger:hover { background: #c2185b; color: #fff; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: var(--shadow); }
+
+/* 확인 모달 */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(40, 20, 50, 0.45);
+  backdrop-filter: blur(2px);
+}
+.dialog {
+  width: 100%;
+  max-width: 380px;
+  display: grid;
+  gap: 14px;
+  background: #fff7fb;
+}
+
+/* 카드 전체를 클릭 가능하게 덮는 링크(내부 버튼은 z-index 로 위에) */
+.stretch-link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
 
 /* 카드/패널 */
 .card {
