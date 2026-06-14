@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { MeetingList } from "@/components/MeetingList";
 import type { Meeting } from "@/lib/types";
 
@@ -11,9 +11,7 @@ export default async function HomePage({
 }) {
   const sp = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const { data: meetings } = await supabase
     .from("meetings")

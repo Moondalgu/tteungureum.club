@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { MeetingDetail } from "@/components/MeetingDetail";
 import type { Meeting, MeetingDate } from "@/lib/types";
 
@@ -13,10 +13,7 @@ export default async function MeetingPage({
   const { id } = await params;
   const meetingId = Number(id);
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const { data: meeting } = await supabase
     .from("meetings")

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { RoomShell } from "@/components/RoomShell";
 import type { RoomTopic, Stroke, Topic } from "@/lib/types";
 
@@ -15,9 +15,7 @@ export default async function RoomPage({
   if (!Number.isFinite(roomId)) notFound();
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const { data: room } = await supabase
     .from("rooms")

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { TopicList } from "@/components/TopicList";
 import type { Topic } from "@/lib/types";
 
@@ -6,9 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function BoxPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const { data: topics } = await supabase
     .from("topics")

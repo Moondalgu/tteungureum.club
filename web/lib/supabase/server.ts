@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { createClient as createSbClient } from "@supabase/supabase-js";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
@@ -28,6 +29,17 @@ export async function createClient() {
     }
   );
 }
+
+// 한 요청 안에서 getUser() 호출을 한 번으로 합친다(React cache).
+// layout 과 각 page 가 같은 요청에서 각각 getUser 를 부르면 토큰 검증
+// 네트워크 왕복이 중복되는데, cache 로 묶으면 요청당 1회만 실행된다.
+export const getCurrentUser = cache(async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});
 
 // 서버 전용: RLS 를 우회하는 service_role 클라이언트 (ingest / 방 생성용)
 export function createAdminClient() {
