@@ -299,3 +299,13 @@ canvas.whiteboard {
 
 .sparkle::before { content: "✦ "; }
 .sparkle::after { content: " ✦"; }
+
+/* 음성방: 참가자/채팅 2열 (모바일에선 1열) */
+.vr-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 640px) {
+  .vr-cols { grid-template-columns: 1fr; }
+}

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Whiteboard } from "@/components/Whiteboard";
 import { RoomTopics } from "@/components/RoomTopics";
 import { Countdown } from "@/components/Countdown";
+import { VoiceRoom } from "@/components/VoiceRoom";
 import type { RoomTopic, Stroke, Topic } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +72,11 @@ export default async function RoomPage({
         boxTopics={(box ?? []) as Topic[]}
         isLoggedIn={!!user}
       />
+
+      <section style={{ marginBottom: 20 }}>
+        <h3>음성 · 화면공유</h3>
+        <VoiceRoom roomId={roomId} isLoggedIn={!!user} />
+      </section>
 
       <section style={{ marginBottom: 20 }}>
         <Countdown roomId={roomId} />
