@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -42,6 +42,13 @@ export function MeetingList({
   const [deadline, setDeadline] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  // soft navigation(예: 헤더의 "방 만들기" → /?new=1) 시에는 컴포넌트가
+  // 재마운트되지 않아 useState 초기값이 갱신되지 않는다. defaultOpen prop이
+  // 바뀌면 다이얼로그 상태를 동기화해 새로고침 없이도 열리도록 한다.
+  useEffect(() => {
+    if (defaultOpen && isLoggedIn) setShow(true);
+  }, [defaultOpen, isLoggedIn]);
 
   function addDateField() {
     setDates((prev) => [...prev, ""]);
