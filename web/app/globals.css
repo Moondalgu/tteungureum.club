@@ -31,11 +31,27 @@ body {
   image-rendering: pixelated;
 }
 
-/* 가로 넘침은 루트(html)에서만 차단한다.
-   body 에 overflow-x 를 주면 overflow-y 가 auto 로 승격되어
-   body 가 스크롤 컨테이너가 되고, 상단바 position:sticky 가 깨진다. */
-html {
+/* 앱 셸 레이아웃: body 자체는 스크롤하지 않는 세로 플렉스 컨테이너로 두고,
+   상단바(첫 자식)는 항상 맨 위에 고정, 스크롤은 .app-scroll 안에서만 일어난다.
+   이렇게 하면 iOS 의 고무줄(overscroll) 바운스가 문서 전체를 끌어내려도
+   상단바는 스크롤 영역 밖이라 절대 딸려 움직이지 않는다. */
+html,
+body {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+.app-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* 하늘에 떠다니는 픽셀 구름 레이어 (카이로소프트 느낌) — 콘텐츠 div 뒤에 깔림 */
@@ -108,6 +124,7 @@ header.topbar {
   position: sticky;
   top: 0;
   z-index: 20;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;

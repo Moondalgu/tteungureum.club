@@ -44,7 +44,10 @@ export default async function RootLayout({
           nickname={nickname}
           avatarUrl={avatarUrl}
         />
-        {children}
+        {/* 상단바는 body 의 일반 흐름에 두고, 스크롤은 이 내부 컨테이너에서만
+            일어나게 한다. 그래야 iOS 고무줄(overscroll) 바운스가 상단바를
+            끌어내리지 못한다. */}
+        <div className="app-scroll">{children}</div>
       </body>
     </html>
   );
