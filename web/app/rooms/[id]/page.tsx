@@ -1,9 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Whiteboard } from "@/components/Whiteboard";
-import { RoomTopics } from "@/components/RoomTopics";
-import { Countdown } from "@/components/Countdown";
-import { VoiceRoom } from "@/components/VoiceRoom";
+import { RoomShell } from "@/components/RoomShell";
 import type { RoomTopic, Stroke, Topic } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +21,7 @@ export default async function RoomPage({
 
   const { data: room } = await supabase
     .from("rooms")
-    .select("id, title, date, mode, discord_url")
+    .select("id, title, date, mode")
     .eq("id", roomId)
     .single();
   if (!room) notFound();
@@ -51,44 +48,20 @@ export default async function RoomPage({
     .order("id", { ascending: true });
 
   return (
-    <main className="container">
-      <div className="row spread" style={{ marginBottom: 12 }}>
-        <div>
-          <h1 style={{ margin: 0 }}>{room.title}</h1>
-          <div className="muted small">
-            📅 {room.date} · {room.mode === "online" ? "온라인" : "오프라인"}
-          </div>
-        </div>
-        {room.discord_url && (
-          <a className="btn cyan" href={room.discord_url} target="_blank" rel="noreferrer">
-            디스코드 채널 열기
-          </a>
-        )}
+    <main className="room-page">
+      <div className="rhead">
+        <h1>{room.title}</h1>
+        <span className="badge">📅 {room.date}</span>
+        <span className="badge">{room.mode === "online" ? "💻 온라인" : "📍 오프라인"}</span>
       </div>
 
-      <RoomTopics
+      <RoomShell
         roomId={roomId}
         initialTopics={(roomTopics ?? []) as RoomTopic[]}
         boxTopics={(box ?? []) as Topic[]}
+        strokes={(strokes ?? []) as Stroke[]}
         isLoggedIn={!!user}
       />
-
-      <section style={{ marginBottom: 20 }}>
-        <h3>음성 · 화면공유</h3>
-        <VoiceRoom roomId={roomId} isLoggedIn={!!user} />
-      </section>
-
-      <section style={{ marginBottom: 20 }}>
-        <Countdown roomId={roomId} />
-      </section>
-
-      <section>
-        <h3>화이트보드 (실시간 공동편집)</h3>
-        <Whiteboard
-          roomId={roomId}
-          initialStrokes={(strokes ?? []) as Stroke[]}
-        />
-      </section>
     </main>
   );
 }

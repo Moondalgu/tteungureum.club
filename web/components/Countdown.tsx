@@ -12,14 +12,30 @@ function fmt(ms: number) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-export function Countdown({ roomId }: { roomId: number }) {
+// 플로팅 타이머 위젯. "+ 도구" 런처로 소환되며(open), 같은 방의 모두가
+// 동일 종료시각을 공유한다. 다른 참가자가 시작하면 자동으로 떠오른다.
+export function FloatingTimer({
+  roomId,
+  open,
+  onClose,
+}: {
+  roomId: number;
+  open: boolean;
+  onClose: () => void;
+}) {
   // endsAt: 종료 시각(epoch ms). null 이면 정지.
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [minutes, setMinutes] = useState(5);
+  const [show, setShow] = useState(false);
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createClient>["channel"]
   > | null>(null);
+
+  // 런처에서 열면 위젯 표시
+  useEffect(() => {
+    if (open) setShow(true);
+  }, [open]);
 
   // 1초 틱
   useEffect(() => {
@@ -35,7 +51,9 @@ export function Countdown({ roomId }: { roomId: number }) {
     });
     channel
       .on("broadcast", { event: "set" }, ({ payload }) => {
-        setEndsAt((payload as { endsAt: number | null }).endsAt);
+        const next = (payload as { endsAt: number | null }).endsAt;
+        setEndsAt(next);
+        if (next) setShow(true); // 누군가 시작하면 자동 표시
       })
       .subscribe();
     channelRef.current = channel;
@@ -59,43 +77,70 @@ export function Countdown({ roomId }: { roomId: number }) {
   function stop() {
     broadcast(null);
   }
+  function close() {
+    setShow(false);
+    onClose();
+  }
+
+  if (!show) return null;
 
   const remaining = endsAt ? endsAt - now : 0;
-  const running = endsAt !== null && remaining > 0;
-  const finished = endsAt !== null && remaining <= 0;
+  const active = endsAt !== null;
+  const finished = active && remaining <= 0;
 
   return (
-    <div className="card" style={{ display: "grid", gap: 12 }}>
-      <div className="row spread">
-        <h3 style={{ margin: 0 }}>⏳ 카운트다운</h3>
-        <div className="row" style={{ gap: 6 }}>
-          {PRESETS.map((m) => (
+    <div className="float-timer">
+      <div className="fh">
+        <b>⏳ 타이머</b>
+        <button className="xbtn" onClick={close} title="닫기">
+          ✕
+        </button>
+      </div>
+
+      {!active ? (
+        <>
+          <div className="row" style={{ gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+            {PRESETS.map((m) => (
+              <button
+                key={m}
+                className={`pbtn ${minutes === m ? "on" : ""}`}
+                onClick={() => setMinutes(m)}
+              >
+                {m}분
+              </button>
+            ))}
+          </div>
+          <button
+            className="btn primary sm"
+            style={{ width: "100%", justifyContent: "center" }}
+            onClick={start}
+          >
+            시작
+          </button>
+        </>
+      ) : (
+        <>
+          <div className={`float-clock ${remaining <= 30000 ? "warn" : ""}`}>
+            {finished ? "00:00" : fmt(remaining)}
+          </div>
+          <div className="row" style={{ gap: 6, marginTop: 8 }}>
             <button
-              key={m}
-              className={`btn ${minutes === m ? "primary" : ""}`}
-              onClick={() => setMinutes(m)}
+              className="btn sm"
+              style={{ flex: 1, justifyContent: "center" }}
+              onClick={stop}
             >
-              {m}분
+              정지
             </button>
-          ))}
-        </div>
-      </div>
-
-      <div
-        className="countdown"
-        style={finished ? { color: "var(--pink)" } : undefined}
-      >
-        {finished ? "00:00 ⏰" : fmt(remaining)}
-      </div>
-
-      <div className="row" style={{ gap: 8, justifyContent: "center" }}>
-        <button className="btn primary" onClick={start}>
-          {running ? "다시 시작" : "시작"}
-        </button>
-        <button className="btn" onClick={stop} disabled={endsAt === null}>
-          정지
-        </button>
-      </div>
+            <button
+              className="btn sm"
+              style={{ flex: 1, justifyContent: "center" }}
+              onClick={close}
+            >
+              닫기
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

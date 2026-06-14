@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>방 UI 시안 v4 · 뜬구름클럽</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/quiple/galmuri@latest/dist/galmuri.css" />
+<style>
+  /* ============================================================
+     뜬구름클럽 Y2K 디자인 시스템 (v4)
+     - 상시 도구(주제/음성/채팅)와 임시 도구(타이머/화이트보드) 분리
+     - 임시 도구는 "+ 도구" 런처로 소환 (점진적 공개)
+     ============================================================ */
+  :root{
+    --ink:#21133a; --muted:#7a6b95; --paper:#fff7fb; --paper-2:#ffffff;
+    --line-w:3px; --r:8px; --r-sm:4px; --sh:4px 4px 0 var(--ink); --sh-sm:2px 2px 0 var(--ink);
+    --brand:#ff8fcf; --brand-strong:#ff4fa3; --brand-tint:#ffe9f5;
+    --ok:#b6ff7a; --info:#8be9ff; --warn:#ffe45e;
+    --s1:6px;--s2:8px;--s3:12px;--s4:14px;--s5:16px;--s6:20px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;color:var(--ink);font-family:"Galmuri11","DungGeunMo",monospace;font-size:14px;line-height:1.7;
+    background:linear-gradient(180deg,#7fccff 0%,#aae0ff 45%,#d7f2ff 100%);min-height:100vh}
+  h1,h2,h3,h4{font-family:"Galmuri14","Galmuri11",monospace;letter-spacing:.5px;margin:0}
+  h1{font-size:18px}
+  .t-hero{font-family:"Galmuri14",monospace;font-size:28px;line-height:1.3;margin-top:4px}
+  .t-sec{font-size:13px}
+  .small{font-size:12px}.muted{color:var(--muted)}.hide{display:none!important}
+
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;
+    border:var(--line-w) solid var(--ink);border-radius:var(--r-sm);
+    background:var(--paper-2);color:var(--ink);cursor:pointer;font-family:inherit;font-size:13px;
+    box-shadow:var(--sh);transition:filter .08s,transform .05s,box-shadow .05s}
+  .btn:hover{filter:brightness(.97)}
+  .btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+  .btn.primary{background:var(--brand)}
+  .btn.primary:hover{background:var(--brand-strong);color:#fff}
+  .btn.ghost{border-color:#bba9d6;background:transparent;color:var(--muted);box-shadow:none}
+  .btn.sm{padding:5px 9px;font-size:12px;box-shadow:var(--sh-sm)}
+  .btn.sm:active{box-shadow:0 0 0 var(--ink)}
+
+  .row{display:flex;align-items:center;gap:var(--s3)}.spread{justify-content:space-between}
+  .card{background:var(--paper);border:var(--line-w) solid var(--ink);border-radius:var(--r);padding:var(--s4);box-shadow:var(--sh)}
+  .card.focus{background:var(--brand-tint);border-width:4px}
+  .badge{font-size:11px;padding:2px 8px;border-radius:999px;border:2px solid var(--ink);background:var(--paper-2)}
+  .badge.ok{background:var(--ok)}.badge.info{background:var(--info)}.badge.warn{background:var(--warn)}
+  .field{width:100%;padding:8px 10px;border:var(--line-w) solid var(--ink);border-radius:var(--r-sm);background:var(--paper-2);font:inherit}
+  .divider{height:2px;background:var(--ink);opacity:.12;margin:var(--s4) 0;border-radius:2px}
+
+  /* ── 전역 탑바: 실제 홈 화면과 동일 ── */
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+    padding:10px 16px;background:linear-gradient(180deg,#eaf8ff 0%,#b9e6ff 100%);border-bottom:4px solid var(--ink)}
+  .brand{font-family:"Galmuri14",monospace;font-weight:700;font-size:22px;color:#fff;letter-spacing:1px;text-decoration:none;
+    text-shadow:2px 0 0 var(--ink),-2px 0 0 var(--ink),0 2px 0 var(--ink),0 -2px 0 var(--ink),
+      2px 2px 0 var(--ink),-2px -2px 0 var(--ink),2px -2px 0 var(--ink),-2px 2px 0 var(--ink),4px 6px 0 rgba(33,19,58,.25)}
+  .brand::before{content:"☁";margin-right:6px;text-shadow:none}
+
+  /* ── 방 헤더: 방 정보만 (로고는 탑바) ── */
+  .room{max-width:1180px;margin:0 auto;padding:var(--s4) var(--s5) 90px}
+  .rhead{display:flex;align-items:center;gap:var(--s3);background:var(--paper);
+    border:var(--line-w) solid var(--ink);border-radius:var(--r);padding:10px var(--s4);box-shadow:var(--sh);margin-bottom:var(--s4)}
+
+  .grid2{display:grid;grid-template-columns:1fr 320px;gap:var(--s4);align-items:start}
+  .stage{display:grid;gap:var(--s4)}
+
+  /* 히어로 */
+  .t-hero{transition:font-size .12s}
+  /* 컴팩트 모드: 스테이지 도구(공유/화이트보드)가 열리면 주제를 축소 */
+  #agenda.compact{padding:10px var(--s4)}
+  #agenda.compact .t-hero{font-size:17px;margin-top:2px}
+  #agenda.compact .heroActions,#agenda.compact .divider,
+  #agenda.compact .acc-head,#agenda.compact #acc{display:none}
+  #agenda.compact .compactNext{display:inline-flex}
+  .compactNext{display:none}
+  .clockpill{display:none;align-items:center;gap:6px;font-family:"GalmuriMono","Galmuri14",monospace;
+    background:var(--ink);color:var(--ok);border-radius:999px;padding:3px 12px;font-size:16px;letter-spacing:1px}
+  .clockpill.on{display:inline-flex}.clockpill.warn{color:var(--warn)}
+  .acc-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .li{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center;padding:8px 10px;
+    border:2px solid var(--ink);border-radius:6px;background:var(--paper-2);margin-bottom:6px}
+  .li .chk{width:18px;height:18px;border:2px solid var(--ink);border-radius:var(--r-sm);background:var(--paper-2)}
+  .li.done .chk{background:var(--ok)}.li.done .t{text-decoration:line-through;opacity:.5}
+  .li.cur{background:var(--brand-tint)}
+
+  .wb{height:300px;background:#fffdf7;border:var(--line-w) solid var(--ink);border-radius:var(--r);
+    display:flex;align-items:center;justify-content:center;color:#b3a9c9}
+  .share{position:relative;height:280px;background:var(--ink);border:var(--line-w) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh);
+    display:flex;align-items:center;justify-content:center;color:#9fe;flex-direction:column;gap:6px}
+  .sharestop{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:6px;
+    padding:6px 10px;border:2px solid #fff;border-radius:var(--r-sm);background:var(--brand-strong);color:#fff;
+    cursor:pointer;font-family:inherit;font-size:12px}
+  .sharestop:hover{filter:brightness(1.08)}
+
+  /* 우측 레일 */
+  .rail{display:grid;gap:var(--s4);position:sticky;top:var(--s4)}
+  .pchips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+  .pchip{display:flex;align-items:center;gap:6px;padding:4px 9px 4px 5px;border:2px solid var(--ink);border-radius:999px;
+    background:var(--paper-2);font-size:12px;box-shadow:var(--sh-sm)}
+  .pchip .av{width:18px;height:18px;border-radius:50%;border:2px solid var(--ink);background:var(--paper-2);
+    display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+  .pchip.spk{box-shadow:0 0 0 2px var(--ok),var(--sh-sm)}
+  .ctrlbar{display:flex;gap:var(--s2)}.ctrlbar .btn{flex:1;justify-content:center}
+  .chat-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .chat-log{height:140px;overflow:auto;border:var(--line-w) solid var(--ink);border-radius:var(--r);background:var(--paper-2);padding:8px;font-size:13px}
+  .chat-log .m{margin-bottom:4px}
+
+  /* ── 도구 런처 (＋) ── */
+  .launcher{position:fixed;right:22px;bottom:22px;z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+  .fab{display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border:var(--line-w) solid var(--ink);
+    border-radius:999px;background:var(--brand);color:var(--ink);cursor:pointer;font-family:"Galmuri14",monospace;
+    font-size:14px;box-shadow:var(--sh)}
+  .fab:hover{background:var(--brand-strong);color:#fff}
+  .fab:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+  .toolmenu{display:grid;gap:8px;background:var(--paper);border:var(--line-w) solid var(--ink);
+    border-radius:var(--r);padding:10px;box-shadow:var(--sh);min-width:170px}
+  .toolmenu .mi{display:flex;align-items:center;gap:10px;padding:9px 10px;border:2px solid var(--ink);
+    border-radius:var(--r-sm);background:var(--paper-2);cursor:pointer;font-size:13px}
+  .toolmenu .mi:hover{background:var(--brand-tint)}
+  .toolmenu .mh{font-size:11px;color:var(--muted);padding:0 2px}
+
+  /* ── 플로팅 타이머 위젯 ── */
+  .floatcard{position:fixed;right:22px;bottom:84px;z-index:65;width:230px;background:var(--paper);
+    border:var(--line-w) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh);padding:12px}
+  .floatcard .fh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .xbtn{width:24px;height:24px;border:2px solid var(--ink);border-radius:var(--r-sm);background:var(--paper-2);cursor:pointer;line-height:1}
+  .pbtn{font-size:12px;padding:5px 10px;border:2px solid var(--ink);border-radius:var(--r-sm);background:var(--paper-2);cursor:pointer}
+  .pbtn.on{background:var(--brand)}
+  .bigclock{font-family:"GalmuriMono","Galmuri14",monospace;font-size:34px;text-align:center;letter-spacing:2px}
+  .bigclock.warn{color:var(--brand-strong)}
+
+  .toolbar-top{max-width:1180px;margin:0 auto 10px;display:flex;gap:8px;align-items:center;justify-content:flex-end}
+
+  /* 디자인 시스템 가이드 */
+  .guide{max-width:1180px;margin:var(--s6) auto 0;padding:var(--s5);background:var(--paper);
+    border:var(--line-w) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh)}
+  .swatches{display:flex;gap:var(--s3);flex-wrap:wrap;margin:10px 0 var(--s5)}
+  .sw{width:120px}.sw .chip{height:46px;border:var(--line-w) solid var(--ink);border-radius:var(--r-sm);box-shadow:var(--sh-sm)}
+  .gsec{margin-top:var(--s5)}.specimen{display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center;margin-top:8px}
+
+  .bottombar{display:none}
+  @media (max-width:860px){
+    .grid2{grid-template-columns:1fr}.rail{position:static}
+    .launcher{right:14px;bottom:74px}
+    .floatcard{bottom:138px;right:14px}
+    .bottombar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;gap:8px;padding:8px 12px;
+      background:var(--paper);border-top:var(--line-w) solid var(--ink);justify-content:space-around}
+    .bottombar .btn{flex:1;justify-content:center}
+  }
+</style>
+</head>
+<body>
+
+<!-- 전역 탑바: 실제 홈 화면 로고/네비 -->
+<header class="topbar">
+  <a class="brand" href="#" title="홈으로">뜬구름클럽</a>
+  <nav class="row">
+    <button class="btn cyan sm">N의 상자</button>
+    <span class="pchip"><span class="av">지</span>지민</span>
+  </nav>
+</header>
+
+<div class="room">
+  <div class="rhead">
+    <h1>3월 뜬구름 방</h1>
+    <span class="badge">📅 2026-06-20</span>
+    <span class="badge">오프라인</span>
+  </div>
+
+  <div class="grid2">
+    <div class="stage">
+      <!-- 주제 (상시·항상 최상단). 스테이지 도구가 열리면 compact로 축소 -->
+      <div id="agenda" class="card focus">
+        <div class="row spread">
+          <span class="badge info">🔵 지금 토론 중 · <span id="prog">1 / 4</span></span>
+          <div class="row" style="gap:8px">
+            <span class="small muted" id="heroAuthor">✍️ 상자</span>
+            <button class="btn primary sm compactNext" onclick="nextTopic()">완료·다음 ›</button>
+          </div>
+        </div>
+        <div class="t-hero" id="heroTitle">AI가 일자리를 대체할까?</div>
+
+        <div class="row heroActions" style="gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn primary" onclick="nextTopic()">✓ 완료하고 다음 주제로</button>
+          <button class="btn" onclick="nextTopic()">건너뛰기 ›</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="acc-head" onclick="document.getElementById('acc').classList.toggle('hide')">
+          <h4 class="t-sec">📋 전체 주제 (<span id="cntDone">0</span>/4)</h4>
+          <span class="small muted">펼치기 ▾</span>
+        </div>
+        <div id="acc" class="hide" style="margin-top:10px">
+          <div id="list"></div>
+          <div class="row" style="margin-top:8px;gap:8px">
+            <input class="field" placeholder="방에서 바로 주제 추가" />
+            <button class="btn primary sm">추가</button>
+            <button class="btn sm" style="white-space:nowrap">N의 상자</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 스테이지 도구: 주제 아래에 표시 (화면공유 / 화이트보드) -->
+      <div id="shareBox" class="share hide">
+        <button class="sharestop" onclick="stopShare()">✕ 공유 종료</button>
+        <div style="font-size:28px">🖥️</div><div>화면공유 중 — 메인 스테이지</div>
+      </div>
+
+      <div id="wbStage" class="card hide">
+        <div class="row spread" style="margin-bottom:10px">
+          <h4 class="t-sec">🎨 화이트보드 (실시간 공동편집)</h4>
+          <div class="row" style="gap:6px">
+            <button class="btn sm">지우기</button>
+            <button class="btn sm" onclick="closeWb()">✕ 닫기</button>
+          </div>
+        </div>
+        <div class="wb">캔버스 영역 — 도구에서 열린 모드</div>
+      </div>
+    </div>
+
+    <div class="rail">
+      <div class="card">
+        <div class="row spread"><h4 class="t-sec">🎙️ 음성 (3)</h4><span class="small muted">발언 중 = 라임 링</span></div>
+        <div class="pchips">
+          <span class="pchip spk"><span class="av">지</span>지민(나) 🎙️</span>
+          <span class="pchip"><span class="av">현</span>현우 🔇</span>
+          <span class="pchip"><span class="av">서</span>서연 🎙️</span>
+        </div>
+        <div class="ctrlbar">
+          <button class="btn primary sm">🎙️ 마이크</button>
+          <button class="btn sm" id="shareBtn" onclick="toggleShare()">🖥️ 공유</button>
+          <button class="btn sm">나가기</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="chat-head" onclick="this.parentElement.querySelector('.cbody').classList.toggle('hide')">
+          <h4 class="t-sec">💬 채팅</h4><span class="small muted">접기 ▾</span>
+        </div>
+        <div class="cbody" style="margin-top:10px">
+          <div class="chat-log">
+            <div class="m"><b>현우</b>: 2번 주제부터 갈까요?</div>
+            <div class="m"><b>서연</b>: 좋아요 👍</div>
+            <div class="m"><b>지민</b>: 5분 타이머 걸게요</div>
+          </div>
+          <div class="row" style="gap:6px;margin-top:8px">
+            <input class="field" placeholder="메시지 입력..." />
+            <button class="btn primary sm">전송</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 디자인 시스템 가이드 -->
+  <div class="guide">
+    <h3>🎨 뜬구름클럽 디자인 시스템</h3>
+    <p class="small muted" style="margin:6px 0 0">상시 도구(주제·음성·채팅)는 늘 보이고, 임시 도구(타이머·화이트보드)는 우하단 <b>＋ 도구</b>로 소환. 색은 핑크 단일 액센트 + 의미색만.</p>
+
+    <div class="gsec">
+      <h4 class="t-sec">색 토큰 (역할)</h4>
+      <div class="swatches">
+        <div class="sw"><div class="chip" style="background:var(--ink)"></div><div class="small">ink<br/><span class="muted">텍스트·테두리</span></div></div>
+        <div class="sw"><div class="chip" style="background:var(--paper)"></div><div class="small">paper<br/><span class="muted">카드 표면</span></div></div>
+        <div class="sw"><div class="chip" style="background:var(--brand)"></div><div class="small">brand<br/><span class="muted">주요 액션·포커스</span></div></div>
+        <div class="sw"><div class="chip" style="background:var(--ok)"></div><div class="small">ok<br/><span class="muted">완료(상태)</span></div></div>
+        <div class="sw"><div class="chip" style="background:var(--info)"></div><div class="small">info<br/><span class="muted">진행중(상태)</span></div></div>
+        <div class="sw"><div class="chip" style="background:var(--warn)"></div><div class="small">warn<br/><span class="muted">경고·임박(상태)</span></div></div>
+      </div>
+    </div>
+
+    <div class="gsec">
+      <h4 class="t-sec">버튼 (3종)</h4>
+      <div class="specimen">
+        <button class="btn primary">primary</button>
+        <button class="btn">default</button>
+        <button class="btn ghost">ghost</button>
+        <button class="btn sm">small</button>
+        <button class="btn primary" disabled style="opacity:.45">disabled</button>
+      </div>
+    </div>
+
+    <div class="gsec">
+      <h4 class="t-sec">규칙</h4>
+      <ul class="small" style="margin:6px 0 0;padding-left:18px">
+        <li>왼쪽 위 <b>로고=홈</b> 고정, 옆에 방 정보</li>
+        <li>임시 도구는 기본 비노출 → <b>＋ 도구</b> 런처로 소환(점진적 공개)</li>
+        <li>타이머=작은 <b>플로팅 위젯</b>(글랜서블), 화이트보드=<b>스테이지 모드</b>(큰 캔버스)</li>
+        <li>주연 색은 핑크 하나, 라임·시안·옐로는 상태에만</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 플로팅 타이머 위젯 -->
+<div id="timerWidget" class="floatcard hide">
+  <div class="fh"><b>⏳ 타이머</b><button class="xbtn" onclick="closeTimer()">✕</button></div>
+  <div id="timerSetup">
+    <div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="pbtn" onclick="pick(this,60)">1분</button>
+      <button class="pbtn on" onclick="pick(this,300)">5분</button>
+      <button class="pbtn" onclick="pick(this,600)">10분</button>
+    </div>
+    <button class="btn primary sm" style="width:100%;justify-content:center" onclick="startTimer()">시작</button>
+  </div>
+  <div id="timerRun" class="hide">
+    <div class="bigclock" id="bigclock">05:00</div>
+    <div class="row" style="gap:6px;margin-top:8px">
+      <button class="btn sm" style="flex:1;justify-content:center" onclick="stopTimer()">정지</button>
+      <button class="btn sm" style="flex:1;justify-content:center" onclick="closeTimer()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 도구 런처 -->
+<div class="launcher">
+  <div id="toolMenu" class="toolmenu hide">
+    <span class="mh">도구 추가</span>
+    <div class="mi" onclick="openTimer()">⏳ <span>타이머</span></div>
+    <div class="mi" onclick="openWb()">🎨 <span>화이트보드</span></div>
+  </div>
+  <button class="fab" onclick="toggleMenu()">＋ 도구</button>
+</div>
+
+<div class="bottombar">
+  <button class="btn sm">🎙️</button><button class="btn sm">🖥️</button>
+  <button class="btn sm">💬</button><button class="btn sm" onclick="toggleMenu()">＋</button>
+  <button class="btn sm">나가기</button>
+</div>
+
+<script>
+  function toggleMenu(){document.getElementById('toolMenu').classList.toggle('hide');}
+
+  // 스테이지 도구가 하나라도 열려 있으면 주제를 compact로 축소
+  function syncCompact(){
+    var shareOn=!document.getElementById('shareBox').classList.contains('hide');
+    var wbOn=!document.getElementById('wbStage').classList.contains('hide');
+    document.getElementById('agenda').classList.toggle('compact', shareOn||wbOn);
+  }
+
+  // 화면공유 = 주제 아래 스테이지에 표시 + 켜고 끄기
+  function toggleShare(){
+    var on=document.getElementById('shareBox').classList.toggle('hide')===false;
+    var b=document.getElementById('shareBtn');
+    if(b){b.textContent=on?'🖥️ 공유 중지':'🖥️ 공유';b.classList.toggle('primary',on);}
+    syncCompact();
+  }
+  function stopShare(){
+    document.getElementById('shareBox').classList.add('hide');
+    var b=document.getElementById('shareBtn');
+    if(b){b.textContent='🖥️ 공유';b.classList.remove('primary');}
+    syncCompact();
+  }
+
+  // 화이트보드 = 주제 아래 스테이지에 표시
+  function openWb(){document.getElementById('wbStage').classList.remove('hide');syncCompact();toggleMenu();}
+  function closeWb(){document.getElementById('wbStage').classList.add('hide');syncCompact();}
+
+  // 타이머 = 플로팅 위젯
+  var tid=null,sel=300,left=300;
+  function pick(el,sec){document.querySelectorAll('#timerSetup .pbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');sel=sec;}
+  function openTimer(){document.getElementById('timerWidget').classList.remove('hide');
+    document.getElementById('timerSetup').classList.remove('hide');
+    document.getElementById('timerRun').classList.add('hide');toggleMenu();}
+  function paint(){var m=String(Math.floor(left/60)).padStart(2,'0'),s=String(left%60).padStart(2,'0');
+    var bc=document.getElementById('bigclock');bc.textContent=m+':'+s;bc.classList.toggle('warn',left<=30);}
+  function startTimer(){left=sel;paint();
+    document.getElementById('timerSetup').classList.add('hide');
+    document.getElementById('timerRun').classList.remove('hide');
+    clearInterval(tid);tid=setInterval(()=>{left=Math.max(0,left-1);paint();if(left===0)clearInterval(tid);},1000);}
+  function stopTimer(){clearInterval(tid);
+    document.getElementById('timerRun').classList.add('hide');
+    document.getElementById('timerSetup').classList.remove('hide');}
+  function closeTimer(){clearInterval(tid);document.getElementById('timerWidget').classList.add('hide');}
+
+  // 주제 진행
+  var topics=[{t:"AI가 일자리를 대체할까?",a:"상자"},{t:"주 4일제는 현실적인가",a:"지민"},
+    {t:"구독경제의 끝은?",a:"상자"},{t:"좋은 질문이란 무엇인가",a:"방추가"}].map(o=>({...o,done:false}));
+  var cur=0;
+  function render(){
+    document.getElementById('cntDone').textContent=topics.filter(t=>t.done).length;
+    if(cur>=topics.length){document.getElementById('prog').textContent=topics.length+' / '+topics.length;
+      document.getElementById('heroTitle').textContent='🎉 모든 주제를 마쳤어요';document.getElementById('heroAuthor').textContent='';}
+    else{document.getElementById('prog').textContent=(cur+1)+' / '+topics.length;
+      document.getElementById('heroTitle').textContent=topics[cur].t;document.getElementById('heroAuthor').textContent='✍️ '+topics[cur].a;}
+    var L=document.getElementById('list');L.innerHTML='';
+    topics.forEach((tp,i)=>{var cls='li'+(tp.done?' done':'')+(i===cur?' cur':'');
+      var tag=tp.done?'<span class="badge ok">✔</span>':(i===cur?'<span class="badge info">진행중</span>':'<span class="small muted">'+tp.a+'</span>');
+      L.insertAdjacentHTML('beforeend','<div class="'+cls+'"><span class="chk"></span><span class="t">'+(i+1)+'. '+tp.t+'</span>'+tag+'</div>');});
+  }
+  function nextTopic(){if(cur<topics.length){topics[cur].done=true;cur++;}render();}
+  render();
+</script>
+</body>
+</html>
