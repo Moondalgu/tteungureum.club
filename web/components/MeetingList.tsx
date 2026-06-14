@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { MeetingEditModal } from "./MeetingEditModal";
 import type { Meeting, RoomMode } from "@/lib/types";
 
 function fmtDate(d: string | null) {
@@ -59,6 +60,9 @@ export function MeetingList({
   const [pendingDelete, setPendingDelete] = useState<Meeting | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  // 수정 모달 상태
+  const [editing, setEditing] = useState<Meeting | null>(null);
 
   // soft navigation(예: 헤더의 "방 만들기" → /?new=1) 시에는 컴포넌트가
   // 재마운트되지 않아 useState 초기값이 갱신되지 않는다. defaultOpen prop이
@@ -319,15 +323,20 @@ export function MeetingList({
                   <span className="badge voting">투표중</span>
                 )}
                 {isLoggedIn && (
-                  <button
-                    className="btn sm danger"
-                    onClick={() => {
-                      setDeleteError("");
-                      setPendingDelete(m);
-                    }}
-                  >
-                    삭제
-                  </button>
+                  <>
+                    <button className="btn sm" onClick={() => setEditing(m)}>
+                      수정
+                    </button>
+                    <button
+                      className="btn sm danger"
+                      onClick={() => {
+                        setDeleteError("");
+                        setPendingDelete(m);
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -340,6 +349,20 @@ export function MeetingList({
             </div>
           </div>
         ))
+      )}
+
+      {editing && (
+        <MeetingEditModal
+          meeting={editing}
+          onClose={() => setEditing(null)}
+          onSaved={(updated) => {
+            setMeetings((prev) =>
+              prev.map((m) => (m.id === updated.id ? updated : m))
+            );
+            setEditing(null);
+            router.refresh();
+          }}
+        />
       )}
 
       <ConfirmDialog
