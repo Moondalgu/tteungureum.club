@@ -8,7 +8,7 @@ export default async function RoomsPage() {
   const supabase = await createClient();
   const { data: rooms } = await supabase
     .from("rooms")
-    .select("id, title, date, mode, discord_url, created_at")
+    .select("id, title, date, mode, created_at")
     .order("created_at", { ascending: false });
 
   return (
@@ -26,7 +26,7 @@ export default async function RoomsPage() {
                 📅 {r.date} · {r.mode === "online" ? "온라인" : "오프라인"}
               </div>
             </div>
-            <span className="badge">{r.discord_url ? "디스코드 ✔" : "디스코드 없음"}</span>
+            <span className="badge">입장 →</span>
           </Link>
         ))}
       </div>

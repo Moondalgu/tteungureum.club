@@ -40,8 +40,6 @@ export interface Room {
   title: string;
   date: string;
   mode: RoomMode;
-  discord_channel_id: string | null;
-  discord_url: string | null;
   meeting_id: number | null;
   created_at: string;
 }

@@ -43,17 +43,6 @@ export default async function MeetingPage({
     if (user && v.user_id === user.id) myVotes.push(v.meeting_date_id);
   }
 
-  // 확정된 모임이면 방 디스코드 링크도 가져오기
-  let discordUrl: string | null = null;
-  if (meeting.room_id) {
-    const { data: room } = await supabase
-      .from("rooms")
-      .select("discord_url")
-      .eq("id", meeting.room_id)
-      .single();
-    discordUrl = room?.discord_url ?? null;
-  }
-
   return (
     <main className="container">
       <MeetingDetail
@@ -63,7 +52,7 @@ export default async function MeetingPage({
         initialMyVotes={myVotes}
         userId={user?.id ?? null}
         roomId={meeting.room_id}
-        discordUrl={discordUrl}
+        isLoggedIn={!!user}
       />
     </main>
   );

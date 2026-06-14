@@ -1,16 +1,11 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import {
-  createDiscordChannel,
-  toChannelName,
-  postDiscordMessage,
-} from "@/lib/discord";
 
 // 모임 날짜투표 자동 확정:
 // 마감일시가 지났는데 아직 status=voting 이면 →
 //   ① 표 집계 → 최다 득표일(동률이면 가장 이른 날) 확정
-//   ② 디스코드 채널 생성 + 확정 알림 메시지(웹 링크 포함)
-//   ③ rooms / meetings 갱신
+//   ② rooms 생성(이미 방이 있으면 날짜/제목만 갱신 — 재투표 케이스)
+//   ③ meetings 갱신
 // 접속 시점에 클라이언트가 호출(서버리스 친화, 별도 크론 불필요).
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -73,63 +68,44 @@ export async function POST(request: Request) {
   }
 
   const confirmedDate = winner.d as string;
-  const modeLabel = meeting.mode === "online" ? "온라인" : "오프라인";
 
-  // ── 디스코드 채널 생성 ──
-  let discord: { id: string; url: string } | null = null;
-  try {
-    const channelName = toChannelName([meeting.title, confirmedDate, modeLabel]);
-    discord = await createDiscordChannel(channelName);
-  } catch (e) {
-    console.error("[discord channel]", e);
-  }
-
-  // ── 방 생성 ──
-  const { data: room, error: rErr } = await admin
-    .from("rooms")
-    .insert({
-      title: meeting.title,
-      date: confirmedDate,
-      mode: meeting.mode,
-      discord_channel_id: discord?.id ?? null,
-      discord_url: discord?.url ?? null,
-      meeting_id: meetingId,
-    })
-    .select("id")
-    .single();
-  if (rErr || !room) {
-    return NextResponse.json(
-      { error: rErr?.message ?? "방 생성 실패" },
-      { status: 500 }
-    );
+  // ── 방 생성 또는 갱신 ──
+  // 이미 방이 있으면(재투표 케이스) 날짜/제목/형태만 갱신하고 방을 유지한다.
+  let roomId = meeting.room_id as number | null;
+  if (roomId) {
+    await admin
+      .from("rooms")
+      .update({ title: meeting.title, date: confirmedDate, mode: meeting.mode })
+      .eq("id", roomId);
+  } else {
+    const { data: room, error: rErr } = await admin
+      .from("rooms")
+      .insert({
+        title: meeting.title,
+        date: confirmedDate,
+        mode: meeting.mode,
+        meeting_id: meetingId,
+      })
+      .select("id")
+      .single();
+    if (rErr || !room) {
+      return NextResponse.json(
+        { error: rErr?.message ?? "방 생성 실패" },
+        { status: 500 }
+      );
+    }
+    roomId = room.id;
   }
 
   // ── 모임 확정 갱신 ──
   await admin
     .from("meetings")
-    .update({ status: "confirmed", confirmed_date: confirmedDate, room_id: room.id })
+    .update({ status: "confirmed", confirmed_date: confirmedDate, room_id: roomId })
     .eq("id", meetingId);
-
-  // ── 디스코드 알림(웹 링크 포함) ──
-  if (discord) {
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ??
-      new URL(request.url).origin;
-    const link = `${origin}/rooms/${room.id}`;
-    await postDiscordMessage(
-      discord.id,
-      [
-        `📢 **${meeting.title}** 모임 날짜가 확정됐어요!`,
-        `🗓️ ${confirmedDate} (${modeLabel}) · 득표 ${best}표`,
-        `🔗 토론방: ${link}`,
-      ].join("\n")
-    );
-  }
 
   return NextResponse.json({
     status: "confirmed",
-    room_id: room.id,
+    room_id: roomId,
     confirmed_date: confirmedDate,
-    discord_url: discord?.url ?? null,
   });
 }

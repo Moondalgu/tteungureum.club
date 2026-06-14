@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, getCurrentUser } from "@/lib/supabase/server";
-import { deleteDiscordChannel } from "@/lib/discord";
 
 // 모임/방 삭제. 로그인 사용자만 가능(소규모 신뢰 그룹).
 // rooms 삭제 → room_topics / strokes / room_messages 가 cascade 삭제,
@@ -29,20 +28,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "모임을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  // 방이 있으면 디스코드 채널 정리 후 방 삭제(자식 cascade)
+  // 방이 있으면 방 삭제(room_topics/strokes/room_messages 가 cascade 삭제)
   if (meeting.room_id) {
-    const { data: room } = await admin
-      .from("rooms")
-      .select("discord_channel_id")
-      .eq("id", meeting.room_id)
-      .single();
-    if (room?.discord_channel_id) {
-      try {
-        await deleteDiscordChannel(room.discord_channel_id);
-      } catch (e) {
-        console.error("[delete discord]", e);
-      }
-    }
     await admin.from("rooms").delete().eq("id", meeting.room_id);
   }
 

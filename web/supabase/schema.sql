@@ -60,8 +60,6 @@ create table if not exists public.rooms (
   title text not null,
   date date not null default current_date,
   mode text not null default 'offline' check (mode in ('online','offline')),
-  discord_channel_id text,
-  discord_url text,
   meeting_id bigint references public.meetings(id) on delete set null,
   created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
