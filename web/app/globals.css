@@ -29,8 +29,12 @@ body {
   line-height: 1.7;
   background: transparent;
   image-rendering: pixelated;
-  /* 모바일에서 가로 스크롤(가로 넘침) 방지 */
-  max-width: 100%;
+}
+
+/* 가로 넘침은 루트(html)에서만 차단한다.
+   body 에 overflow-x 를 주면 overflow-y 가 auto 로 승격되어
+   body 가 스크롤 컨테이너가 되고, 상단바 position:sticky 가 깨진다. */
+html {
   overflow-x: hidden;
 }
 
