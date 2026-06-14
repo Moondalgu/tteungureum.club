@@ -105,10 +105,12 @@ export function ShareStage({
 export function VoiceChat() {
   const { chatMessages, send, isSending } = useChat();
   const [text, setText] = useState("");
-  const endRef = useRef<HTMLDivElement>(null);
+  const logRef = useRef<HTMLDivElement>(null);
 
+  // 채팅 로그 컨테이너 내부만 맨 아래로 스크롤(페이지 전체 점프 방지).
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = logRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [chatMessages]);
 
   async function onSubmit(e: React.FormEvent) {
@@ -122,7 +124,7 @@ export function VoiceChat() {
   return (
     <div className="card">
       <h4 style={{ margin: "0 0 10px", fontSize: 13 }}>💬 채팅</h4>
-      <div className="chat-log">
+      <div className="chat-log" ref={logRef}>
         {chatMessages.length === 0 && (
           <div className="muted small">아직 메시지가 없어요.</div>
         )}
@@ -131,7 +133,6 @@ export function VoiceChat() {
             <strong>{m.from?.name || m.from?.identity || "익명"}</strong>: {m.message}
           </div>
         ))}
-        <div ref={endRef} />
       </div>
       <form className="row" style={{ gap: 6, marginTop: 8 }} onSubmit={onSubmit}>
         <input

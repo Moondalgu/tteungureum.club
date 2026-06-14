@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export function TopBar({
@@ -13,8 +12,6 @@ export function TopBar({
   nickname: string | null;
   avatarUrl: string | null;
 }) {
-  const router = useRouter();
-
   async function loginWithKakao() {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
@@ -23,10 +20,11 @@ export function TopBar({
     });
   }
 
+  // signOut() 이후 AuthListener 의 onAuthStateChange(SIGNED_OUT) 가
+  // router.refresh() 를 호출해 상단바가 즉시 갱신된다.
   async function logout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.refresh();
   }
 
   return (

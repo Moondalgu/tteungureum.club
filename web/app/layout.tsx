@@ -1,11 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { TopBar } from "@/components/TopBar";
+import { AuthListener } from "@/components/AuthListener";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "뜬구름클럽",
   description: "주제를 정해 자유롭게 토론하는 모임",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({
@@ -33,6 +40,7 @@ export default async function RootLayout({
   return (
     <html lang="ko">
       <body>
+        <AuthListener />
         <TopBar
           isLoggedIn={!!user}
           nickname={nickname}

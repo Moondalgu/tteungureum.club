@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import { RoomTopics } from "./RoomTopics";
 import { Whiteboard } from "./Whiteboard";
 import { FloatingTimer } from "./Countdown";
 import { VoiceRail, VoiceChat, ShareStage } from "./VoiceRoom";
+import { createClient } from "@/lib/supabase/client";
 import type { RoomTopic, Stroke, Topic } from "@/lib/types";
 
 // 방 화면 오케스트레이터.
@@ -38,6 +39,11 @@ export function RoomShell({
   const [timerOpen, setTimerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // 도구(화이트보드 등) 열림 상태를 방 전체에 공유하는 realtime 채널
+  const toolsChan = useRef<ReturnType<
+    ReturnType<typeof createClient>["channel"]
+  > | null>(null);
+
   const compact = sharing || wbOpen;
 
   const join = useCallback(async () => {
@@ -57,6 +63,38 @@ export function RoomShell({
       setLoading(false);
     }
   }, [roomId]);
+
+  // 로그인 사용자는 입장 시 자동으로 LiveKit 방에 연결(마이크는 끈 채 청취/구독만).
+  // 이렇게 해야 화면공유 트랙이 모두에게 즉시 전달된다.
+  useEffect(() => {
+    if (isLoggedIn && !conn && !loading) join();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
+
+  // 화이트보드 열림 상태 공유: 누가 도구를 꺼내면 모두 화면에 보이게 한다.
+  useEffect(() => {
+    const supabase = createClient();
+    const ch = supabase.channel(`tools-${roomId}`, {
+      config: { broadcast: { self: false } },
+    });
+    ch.on("broadcast", { event: "wb" }, ({ payload }) => {
+      setWbOpen(!!(payload as { open?: boolean }).open);
+    }).subscribe();
+    toolsChan.current = ch;
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [roomId]);
+
+  // 화이트보드 열기/닫기 — 로컬 상태 변경 + 방 전체 브로드캐스트
+  const setWhiteboard = useCallback((open: boolean) => {
+    setWbOpen(open);
+    toolsChan.current?.send({
+      type: "broadcast",
+      event: "wb",
+      payload: { open },
+    });
+  }, []);
 
   const onSharingChange = useCallback((active: boolean) => {
     setSharing(active);
@@ -78,7 +116,7 @@ export function RoomShell({
         <div className="card">
           <div className="row spread" style={{ marginBottom: 10 }}>
             <h4 style={{ margin: 0, fontSize: 13 }}>🎨 화이트보드 (실시간 공동편집)</h4>
-            <button className="btn sm" onClick={() => setWbOpen(false)}>
+            <button className="btn sm" onClick={() => setWhiteboard(false)}>
               ✕ 닫기
             </button>
           </div>
@@ -163,7 +201,7 @@ export function RoomShell({
             <div
               className="mi"
               onClick={() => {
-                setWbOpen(true);
+                setWhiteboard(true);
                 setMenuOpen(false);
               }}
             >
