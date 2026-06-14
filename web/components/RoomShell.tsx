@@ -139,14 +139,16 @@ export function RoomShell({
           <h4 style={{ margin: 0, fontSize: 13 }}>🎙️ 음성 · 화면공유</h4>
           {isLoggedIn ? (
             <>
-              <span className="muted small">마이크와 화면공유로 함께 토론해요</span>
+              <span className="muted small">
+                참여하면 마이크는 꺼진 채로 연결돼요. 마이크·화면공유는 따로 켤 수 있어요.
+              </span>
               {error && (
                 <span className="small" style={{ color: "var(--pink-deep)" }}>
                   {error}
                 </span>
               )}
               <button className="btn primary" onClick={join} disabled={loading}>
-                {loading ? "연결 중..." : "음성 참여"}
+                {loading ? "연결 중..." : "음성·화면공유 참여"}
               </button>
             </>
           ) : (
