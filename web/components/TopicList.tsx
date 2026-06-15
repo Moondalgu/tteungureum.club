@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { usePersistentToggle } from "@/lib/usePersistentToggle";
 import type { Topic } from "@/lib/types";
 
 export function TopicList({
@@ -14,7 +15,7 @@ export function TopicList({
   const supabase = createClient();
 
   const [topics, setTopics] = useState<Topic[]>(initialTopics);
-  const [hideDone, setHideDone] = useState(true);
+  const [hideDone, setHideDone] = usePersistentToggle("hideDoneTopics", true);
   const [adding, setAdding] = useState(false);
   const [newContent, setNewContent] = useState("");
   const [error, setError] = useState("");

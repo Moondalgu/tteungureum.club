@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { usePersistentToggle } from "@/lib/usePersistentToggle";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { MeetingEditModal } from "./MeetingEditModal";
 import type { Meeting, RoomMode } from "@/lib/types";
@@ -45,7 +46,7 @@ export function MeetingList({
 
   const [meetings, setMeetings] = useState<Meeting[]>(initialMeetings);
   const [show, setShow] = useState(defaultOpen && isLoggedIn);
-  const [hideDone, setHideDone] = useState(true);
+  const [hideDone, setHideDone] = usePersistentToggle("hideDoneMeetings", true);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [mode, setMode] = useState<RoomMode>("offline");
