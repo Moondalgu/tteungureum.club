@@ -1,0 +1,41 @@
+name: Supabase Keep-Alive
+
+# 무료 티어 Supabase는 7일간 활동이 없으면 자동 정지됩니다.
+# 이 워크플로우는 3일마다 DB에 가벼운 쿼리를 1번 날려 "활성" 상태를 유지합니다.
+on:
+  schedule:
+    # 매 3일마다 00:17 UTC (분/시를 0이 아닌 값으로 두어 GitHub 혼잡 시간대 회피)
+    - cron: "17 0 */3 * *"
+  workflow_dispatch: {} # 필요 시 수동 실행 버튼
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::SUPABASE_URL 또는 SUPABASE_ANON_KEY secret이 설정되지 않았습니다."
+            exit 1
+          fi
+
+          # 공개 읽기(RLS: p_read using(true)) 테이블인 profiles에 최소 쿼리를 날린다.
+          # HEAD + limit 1 로 데이터는 안 받고 DB 활동만 발생시킴.
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X HEAD \
+            "$SUPABASE_URL/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+
+          echo "HTTP status: $status"
+
+          # 2xx면 성공 (RLS로 인해 200/206 예상)
+          if [ "$status" -ge 200 ] && [ "$status" -lt 300 ]; then
+            echo "✅ Supabase keep-alive 성공"
+          else
+            echo "::error::Supabase 응답 이상 (HTTP $status)"
+            exit 1
+          fi
