@@ -139,7 +139,7 @@ export function MeetingDetail({
   return (
     <>
       <div className="row spread" style={{ marginBottom: 12 }}>
-        <h1 style={{ margin: 0 }}>{meeting.title}</h1>
+        <h1 className="wrap-title">{meeting.title}</h1>
         <div className="row" style={{ gap: 8 }}>
           {confirmed ? (
             <span className="badge confirmed">확정</span>
@@ -199,18 +199,22 @@ export function MeetingDetail({
             className={`date-chip ${voted ? "voted" : ""} ${win || isWinning ? "win" : ""}`}
             onClick={() => toggleVote(d.id)}
             disabled={confirmed || deadlinePassed}
+            aria-pressed={voted}
             style={{ width: "100%", textAlign: "left" }}
           >
             <span>
-              {d.d} ({weekday(d.d)}) {voted && "✓"}
+              <span aria-hidden>{voted ? "☑" : "☐"}</span> {d.d} ({weekday(d.d)})
             </span>
-            <span className="vote-count">{c}표</span>
+            <span className={`vote-count ${win || isWinning ? "top" : ""}`}>
+              {(win || isWinning) && c > 0 && "👑 "}
+              {c}표
+            </span>
           </button>
         );
       })}
 
       {error && (
-        <p className="small" style={{ color: "var(--pink-deep)" }}>{error}</p>
+        <p className="small err">{error}</p>
       )}
 
       {editing && (

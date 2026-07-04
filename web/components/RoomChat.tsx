@@ -12,12 +12,15 @@ export function RoomChat({
   nickname,
   initialMessages,
   isLoggedIn,
+  visible = true,
 }: {
   roomId: number;
   userId: string | null;
   nickname: string | null;
   initialMessages: RoomMessage[];
   isLoggedIn: boolean;
+  /** 모바일 탭 전환 등으로 표시 상태가 바뀔 때 스크롤을 다시 맞추기 위한 신호 */
+  visible?: boolean;
 }) {
   const [messages, setMessages] = useState<RoomMessage[]>(initialMessages);
   const [text, setText] = useState("");
@@ -26,10 +29,12 @@ export function RoomChat({
   const [supabase] = useState(() => createClient());
 
   // 새 메시지 도착/전송 시 로그 컨테이너만 맨 아래로(페이지 점프 방지).
+  // display:none 상태에선 scrollHeight 가 0이라 무효 — visible 이 true 로
+  // 바뀌는 순간(모바일 채팅 탭 진입) 다시 실행해 최신 메시지로 맞춘다.
   useEffect(() => {
     const el = logRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages]);
+  }, [messages, visible]);
 
   // 실시간 구독: 이 방의 새 메시지 INSERT
   useEffect(() => {
@@ -74,7 +79,7 @@ export function RoomChat({
 
   return (
     <div className="card">
-      <h4 style={{ margin: "0 0 10px", fontSize: 13 }}>💬 채팅</h4>
+      <h4 style={{ margin: "0 0 10px" }}>💬 채팅</h4>
       <div className="chat-log" ref={logRef}>
         {messages.length === 0 && (
           <div className="muted small">아직 메시지가 없어요.</div>
@@ -86,7 +91,7 @@ export function RoomChat({
         ))}
       </div>
       {isLoggedIn ? (
-        <form className="row" style={{ gap: 6, marginTop: 8 }} onSubmit={onSubmit}>
+        <form className="row chat-form" style={{ gap: 6, marginTop: 8 }} onSubmit={onSubmit}>
           <input
             className="field"
             value={text}

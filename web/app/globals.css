@@ -1,7 +1,16 @@
 /* ── Y2K 픽셀 테마 ───────────────────────────────────────── */
 @import url("https://cdn.jsdelivr.net/gh/quiple/galmuri@latest/dist/galmuri.css");
 
+/* ════════════════════════════════════════════════════════════
+   디자인 토큰
+   - 픽셀 폰트는 "정수배" 크기에서만 도트가 선명하다:
+     Galmuri11 → 12px(×1), 24px(×2) / Galmuri14 → 15px(×1), 30px(×2), 45px(×3)
+     타이포 스케일은 반드시 이 값만 사용한다.
+   - 하드 섀도는 blur 0 고정, 오프셋만 단계화(2/4/8px).
+   - 간격은 4px 배수 그리드.
+   ════════════════════════════════════════════════════════════ */
 :root {
+  /* 팔레트 */
   --pink: #ff8fcf;
   --pink-deep: #ff4fa3;
   --cyan: #8be9ff;
@@ -11,8 +20,46 @@
   --yellow: #ffe45e;
   --cream: #fff7fb;
   --ink: #21133a;
-  --line: #21133a;
+  --muted: #7a6b95;
+
+  /* 하드 섀도 (blur 0 불변) */
+  --shadow-sm: 2px 2px 0 var(--ink);
   --shadow: 4px 4px 0 var(--ink);
+
+  /* 간격은 4px 배수 그리드를 따른다 (4/8/12/16/24/32) */
+
+  /* 반경: 컨트롤 4px / 카드·패널 8px / 칩·배지 pill */
+  --r-ctl: 4px;
+  --r-card: 8px;
+  --r-pill: 999px;
+
+  /* 타이포 (픽셀 정수배 전용) */
+  --font-11: "Galmuri11", "DungGeunMo", monospace;
+  --font-14: "Galmuri14", "Galmuri11", monospace;
+  --font-mono: "GalmuriMono", "Galmuri14", monospace;
+  --fs-sm: 12px;   /* Galmuri11 ×1 — 메타/배지/보조 */
+  --fs-base: 15px; /* Galmuri14 ×1 — 본문/버튼 */
+  --fs-lg: 24px;   /* Galmuri11 ×2 — 제목 */
+  --fs-xl: 30px;   /* Galmuri14 ×2 — 큰 제목/로고 */
+  --fs-hero: 45px; /* Galmuri14 ×3 — 히어로 로고(데스크톱) */
+
+  /* 터치 타깃 */
+  --tap: 44px;
+  --tap-sm: 36px;
+
+  /* 안전 영역 (노치/홈 인디케이터) */
+  --safe-b: env(safe-area-inset-bottom, 0px);
+
+  /* 모바일 하단 탭바 높이 (fixed 요소 오프셋 계산용) */
+  --tabbar-h: 56px;
+}
+
+/* 뷰포트 분기 유틸: IA 는 동일하게, 배치만 기기별로 바꾼다 */
+@media (max-width: 767px) {
+  .desktop-only { display: none !important; }
+}
+@media (min-width: 768px) {
+  .mobile-only { display: none !important; }
 }
 
 * {
@@ -24,11 +71,14 @@ body {
   margin: 0;
   padding: 0;
   color: var(--ink);
-  font-family: "Galmuri11", "Galmuri14", "DungGeunMo", monospace;
-  font-size: 15px;
+  font-family: var(--font-14);
+  font-size: var(--fs-base);
   line-height: 1.7;
   background: transparent;
   image-rendering: pixelated;
+  /* 픽셀 폰트 도트 보존: 안티앨리어싱 끄기 (macOS/일부 브라우저) */
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 /* 앱 셸 레이아웃: body 자체는 스크롤하지 않는 세로 플렉스 컨테이너로 두고,
@@ -75,17 +125,38 @@ body::before {
   to { background-position: 480px 0, center; }
 }
 
-h1, h2, h3 { font-family: "Galmuri14", "Galmuri11", monospace; letter-spacing: 0.5px; }
-h1 { font-size: clamp(22px, 5vw, 26px); }
+/* 장식 모션은 전정기관 민감 사용자를 위해 전부 끌 수 있어야 한다.
+   iteration-count 를 1로 강제하지 않으면 무한 애니메이션(스켈레톤 디더)이
+   0.01ms 마다 재시작하며 오히려 스트로브처럼 깜빡인다 */
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── 타이포 스케일 ── */
+h1, h2, h3 { font-family: var(--font-14); letter-spacing: 0.5px; }
+h1 { font-size: var(--fs-lg); font-family: var(--font-11); }
+h3 { font-size: var(--fs-base); }
+h4 { margin: 0; font-size: var(--fs-sm); font-family: var(--font-11); letter-spacing: 0.5px; }
 
 a { color: var(--pink-deep); text-decoration: none; }
 
-img { image-rendering: pixelated; }
+img { image-rendering: pixelated; max-width: 100%; }
+
+/* 키보드 포커스: 보더급 굵기의 픽셀 아웃라인 (마우스 클릭에는 안 뜸) */
+:where(a, button, input, select, textarea, [role="button"], summary):focus-visible {
+  outline: 3px solid var(--pink-deep);
+  outline-offset: 2px;
+}
 
 .container {
   max-width: 920px;
   margin: 0 auto;
-  padding: 22px 16px 96px;
+  padding: 22px 16px calc(96px + var(--safe-b));
 }
 
 /* 타이틀 스크린 느낌의 히어로 로고 */
@@ -95,9 +166,9 @@ img { image-rendering: pixelated; }
 }
 .hero .logo {
   display: inline-block;
-  font-family: "Galmuri14", monospace;
+  font-family: var(--font-14);
   font-weight: 700;
-  font-size: clamp(30px, 11vw, 44px);
+  font-size: var(--fs-xl);
   line-height: 1.15;
   color: #fff;
   text-shadow:
@@ -107,15 +178,19 @@ img { image-rendering: pixelated; }
     3px -3px 0 var(--ink), -3px 3px 0 var(--ink),
     6px 9px 0 rgba(33, 19, 58, 0.22);
 }
+@media (min-width: 640px) {
+  .hero .logo { font-size: var(--fs-hero); }
+}
 .hero .tagline {
   margin-top: 10px;
-  font-size: 13px;
+  font-family: var(--font-11);
+  font-size: var(--fs-sm);
   color: var(--ink);
   background: #fff;
   display: inline-block;
   padding: 4px 12px;
   border: 3px solid var(--ink);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   box-shadow: var(--shadow);
 }
 
@@ -133,9 +208,9 @@ header.topbar {
   border-bottom: 4px solid var(--ink);
 }
 .brand {
-  font-family: "Galmuri14", monospace;
+  font-family: var(--font-14);
   font-weight: 700;
-  font-size: 22px;
+  font-size: var(--fs-lg);
   color: #fff;
   letter-spacing: 1px;
   text-shadow:
@@ -151,52 +226,152 @@ header.topbar {
   text-shadow: none;
 }
 
-/* 버튼 - 청키 픽셀 */
+/* ── 모바일 하단 탭바 (<768px) ──
+   body 플렉스 흐름의 마지막 자식으로 두어 .app-scroll 이 알아서 줄어든다.
+   데스크톱에선 숨기고 상단바가 같은 항목을 담당한다 (IA 동일, 배치만 다름) */
+.tabbar {
+  flex: 0 0 auto;
+  display: none;
+  border-top: 4px solid var(--ink);
+  background: linear-gradient(180deg, #eaf8ff 0%, #b9e6ff 100%);
+  padding-bottom: var(--safe-b);
+}
+@media (max-width: 767px) {
+  .tabbar { display: flex; }
+}
+.tabbar .tab {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--tabbar-h);
+  padding: 6px 4px;
+  border: none;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--font-11);
+  font-size: var(--fs-sm);
+  line-height: 1.2;
+}
+.tabbar .tab .ticon { font-size: 20px; line-height: 1; }
+.tabbar .tab.active {
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 4px 0 var(--pink-deep);
+  font-weight: 700;
+}
+
+/* ── 버튼: 청키 픽셀 + 물리적 눌림 ──
+   hover = 살짝 눌림(이동 1px + 섀도 3px), active = 완전 눌림(이동 4px + 섀도 0)
+   "이동량 + 섀도 오프셋 = 4px" 을 유지하면 버튼이 실제로 눌리는 느낌이 난다 */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 8px 14px;
+  min-height: var(--tap);
+  padding: 8px 16px;
   border: 3px solid var(--ink);
-  border-radius: 4px;
+  border-radius: var(--r-ctl);
   background: #fff;
   color: var(--ink);
   cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
+  font-family: var(--font-14);
+  font-size: var(--fs-base);
+  line-height: 1.4;
   box-shadow: var(--shadow);
   transition: transform 0.05s, box-shadow 0.05s;
 }
-.btn:hover { background: var(--yellow); }
-.btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); }
+.btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); }
 .btn.primary { background: var(--pink); }
-.btn.primary:hover { background: var(--pink-deep); color: #fff; }
 .btn.kakao { background: #fee500; font-weight: 700; }
 .btn.cyan { background: var(--cyan); }
-.btn.sm { padding: 5px 9px; font-size: 12px; box-shadow: 2px 2px 0 var(--ink); }
-.btn.sm:active { box-shadow: 0 0 0 var(--ink); }
+.btn.sm {
+  min-height: var(--tap-sm);
+  padding: 5px 10px;
+  font-family: var(--font-11);
+  font-size: var(--fs-sm);
+  box-shadow: var(--shadow-sm);
+}
+.btn.sm:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
 .btn.danger { background: var(--pink-deep); color: #fff; }
-.btn.danger:hover { background: #c2185b; color: #fff; }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: var(--shadow); }
 
-/* 확인 모달 */
+/* hover 는 진짜 포인터가 있는 기기에서만 — 터치 기기는 탭 후 에뮬레이트된
+   :hover 가 남아 버튼이 계속 반쯤 눌린 상태로 보이는 문제가 있다 */
+@media (hover: hover) {
+  .btn:hover { background: var(--yellow); transform: translate(1px, 1px); box-shadow: 3px 3px 0 var(--ink); }
+  .btn.primary:hover { background: var(--pink-deep); color: #fff; }
+  .btn.sm:hover { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+  .btn.danger:hover { background: #c2185b; color: #fff; }
+  .linkbtn:hover { text-decoration: underline; }
+  .date-chip:hover:not(:disabled) { transform: translate(1px, 1px); box-shadow: 3px 3px 0 var(--ink); }
+  .fab:hover { background: var(--pink-deep); color: #fff; }
+  .toolmenu .mi:hover { background: #ffe9f5; }
+  .sharestop:hover { filter: brightness(1.08); }
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow);
+}
+.btn.sm:disabled { box-shadow: var(--shadow-sm); }
+
+/* 텍스트형 보조 버튼 (터치 타깃 확보) */
+.linkbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-sm);
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: var(--pink-deep);
+  cursor: pointer;
+  font-family: var(--font-11);
+  font-size: var(--fs-sm);
+}
+/* 확인 모달 — 데스크톱은 중앙 오버레이, 모바일은 바텀시트 */
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  /* 방 화면의 fixed 도구(launcher z70, float-timer z65)보다 항상 위 */
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   background: rgba(40, 20, 50, 0.45);
-  backdrop-filter: blur(2px);
 }
 .dialog {
   width: 100%;
   max-width: 380px;
   display: grid;
   gap: 14px;
-  background: #fff7fb;
+  background: var(--cream);
+}
+@media (max-width: 767px) {
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .dialog,
+  .modal {
+    max-width: none;
+    border-radius: var(--r-card) var(--r-card) 0 0;
+    border-bottom: none;
+    box-shadow: none;
+    animation: sheet-up 0.18s ease-out;
+  }
+  .dialog { padding-bottom: calc(16px + var(--safe-b)); }
+  .modal { max-height: calc(100dvh - 48px); }
+  .modal-foot { padding-bottom: calc(12px + var(--safe-b)); }
+}
+@keyframes sheet-up {
+  from { transform: translateY(24px); opacity: 0.6; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 /* 폼 모달 (모임 수정 등) — 헤더/본문(스크롤)/푸터 구조 */
@@ -208,7 +383,7 @@ header.topbar {
   flex-direction: column;
   background: var(--cream);
   border: 3px solid var(--ink);
-  border-radius: 10px;
+  border-radius: var(--r-card);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -218,15 +393,16 @@ header.topbar {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 13px 16px;
+  padding: 12px 16px;
   background: var(--pink);
   border-bottom: 3px solid var(--ink);
 }
-.modal-head h3 { margin: 0; font-size: 17px; }
+.modal-head h3 { margin: 0; font-size: var(--fs-base); }
 .modal-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 16px;
   display: grid;
   gap: 16px;
@@ -243,7 +419,7 @@ header.topbar {
 
 /* 모달 폼 필드 라벨 */
 .fld { display: grid; gap: 6px; }
-.fld > .lbl { font-size: 13px; font-weight: 700; color: var(--ink); }
+.fld > .lbl { font-family: var(--font-11); font-size: var(--fs-sm); font-weight: 700; color: var(--ink); }
 
 /* 날짜 입력 행 */
 .date-row { display: flex; gap: 8px; align-items: center; }
@@ -257,8 +433,9 @@ header.topbar {
   padding: 10px 12px;
   background: var(--lime);
   border: 3px solid var(--ink);
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: var(--r-ctl);
+  font-family: var(--font-11);
+  font-size: var(--fs-sm);
   line-height: 1.5;
 }
 .reopen-box input { margin-top: 3px; accent-color: var(--pink-deep); }
@@ -270,31 +447,72 @@ header.topbar {
   z-index: 0;
 }
 
-/* 카드/패널 */
+/* 카드/패널 — 픽셀 테마에 맞게 불투명(블러 글래스 효과 제거: 컨셉 일관성 + 모바일 GPU 절약) */
 .card {
-  background: rgba(255, 247, 251, 0.6);
-  backdrop-filter: blur(8px) saturate(1.15);
-  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  background: var(--cream);
   border: 3px solid var(--ink);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   padding: 16px;
   box-shadow: var(--shadow);
 }
 
 .row { display: flex; align-items: center; gap: 12px; }
 .spread { justify-content: space-between; }
-.muted { color: #7a6b95; }
-.small { font-size: 13px; }
+.muted { color: var(--muted); }
+.small { font-family: var(--font-11); font-size: var(--fs-sm); }
 .grid { display: grid; gap: 12px; }
+
+/* 에러/경고 텍스트 */
+.err { color: var(--pink-deep); }
+
+/* 빈 상태 */
+.empty {
+  text-align: center;
+  padding: 40px 0;
+  margin: 0;
+}
+
+/* 로딩 스켈레톤 — 픽셀 디더링 체커 패턴. 실제 콘텐츠 크기를 미리 차지해
+   로딩 후 레이아웃 시프트를 막는다 */
+.skeleton {
+  display: inline-block;
+  border-radius: var(--r-ctl);
+  background: repeating-conic-gradient(#eee2f2 0% 25%, #faf4fc 0% 50%);
+  background-size: 8px 8px;
+  animation: dither 0.6s steps(2) infinite;
+}
+@keyframes dither {
+  to { background-position: 8px 0; }
+}
+
+/* 한 줄 말줄임 (flex 안에서는 min-width:0 이 있어야 줄어든다) */
+.ellipsis {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 긴 제목: flex 안에서 줄어들며 아무 데서나 줄바꿈 허용 */
+.wrap-title {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 
 input.field, textarea.field, select.field {
   width: 100%;
+  min-height: var(--tap);
   padding: 10px 12px;
   border: 3px solid var(--ink);
-  border-radius: 4px;
+  border-radius: var(--r-ctl);
   background: #fff;
   color: var(--ink);
-  font: inherit;
+  font-family: inherit;
+  /* iOS Safari 는 입력 폰트가 16px 미만이면 포커스 시 화면을 강제 확대한다.
+     픽셀 정수배(15px)보다 줌 방지가 우선 — 입력 중 텍스트는 잠깐이라 허용 */
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 /* 주제 / 리스트 항목 */
@@ -304,25 +522,34 @@ input.field, textarea.field, select.field {
   gap: 12px;
   padding: 14px 16px;
   border: 3px solid var(--ink);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(8px) saturate(1.15);
-  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  border-radius: var(--r-card);
+  background: #fff;
   margin-bottom: 12px;
   align-items: start;
   box-shadow: var(--shadow);
 }
 .meeting-item { grid-template-columns: 1fr; }
+/* 카드 헤더: 좁은 화면에서 제목이 먼저 줄을 차지하고 배지/버튼이 아래로 감싸며
+   내려가게 해 오른쪽 잘림을 막는다 */
+.meeting-item > .row.spread { flex-wrap: wrap; }
+.meeting-item > .row.spread > .ellipsis { flex: 1 1 160px; }
+.meeting-item > .row.spread > .row {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
+}
 .topic.selected { background: var(--lime); }
-.topic .meta, .meta { color: #7a6b95; font-size: 12px; margin-top: 4px; }
-.content { white-space: pre-wrap; }
+.topic .meta, .meta { color: var(--muted); font-family: var(--font-11); font-size: var(--fs-sm); margin-top: 4px; }
+.content { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .badge {
-  font-size: 11px;
+  font-family: var(--font-11);
+  font-size: var(--fs-sm);
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   border: 2px solid var(--ink);
   background: #fff;
+  white-space: nowrap;
 }
 .badge.done { background: var(--lime); }
 .badge.selected { background: var(--cyan); }
@@ -333,16 +560,17 @@ input.field, textarea.field, select.field {
 
 .avatar {
   width: 40px; height: 40px;
-  border-radius: 6px;
+  border-radius: var(--r-ctl);
   object-fit: cover;
   border: 3px solid var(--ink);
   background: #fff;
+  flex: 0 0 auto;
 }
 
 /* 하단 고정 액션바 */
 .toolbar {
   position: sticky;
-  bottom: 12px;
+  bottom: calc(12px + var(--safe-b));
   display: flex;
   gap: 10px;
   align-items: center;
@@ -350,49 +578,44 @@ input.field, textarea.field, select.field {
   padding: 12px 16px;
   background: var(--yellow);
   border: 3px solid var(--ink);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   margin-top: 16px;
   box-shadow: var(--shadow);
 }
 
-/* 날짜 투표 칩 */
+/* 날짜 투표 칩 — 행 전체가 탭 영역, 48px 이상 */
 .date-chip {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  min-height: 48px;
   padding: 10px 14px;
   border: 3px solid var(--ink);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(8px) saturate(1.15);
-  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  border-radius: var(--r-card);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-14);
+  font-size: var(--fs-base);
   margin-bottom: 10px;
   cursor: pointer;
   box-shadow: var(--shadow);
+  transition: transform 0.05s, box-shadow 0.05s;
 }
+.date-chip:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); }
+.date-chip:disabled { cursor: default; }
 .date-chip.voted { background: var(--cyan); }
 .date-chip.win { background: var(--lime); }
 .vote-count {
-  font-family: "Galmuri14", monospace;
+  font-family: var(--font-14);
   border: 2px solid var(--ink);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   padding: 1px 10px;
   background: var(--yellow);
+  white-space: nowrap;
 }
-
-/* 카운트다운 */
-.countdown {
-  font-family: "GalmuriMono", "Galmuri14", monospace;
-  font-size: clamp(30px, 9vw, 40px);
-  text-align: center;
-  padding: 10px;
-  background: var(--ink);
-  color: var(--lime);
-  border-radius: 8px;
-  border: 3px solid var(--ink);
-  letter-spacing: 2px;
-}
+/* 최다 득표 강조 (색 + 굵기 + 👑 이중 부호화) */
+.vote-count.top { background: var(--pink); font-weight: 700; }
 
 /* 화이트보드 */
 .wb-wrap { display: flex; flex-direction: column; gap: 12px; }
@@ -404,33 +627,23 @@ canvas.whiteboard {
   height: auto;
   max-height: 70vh;
   background: #fffdf7;
-  border-radius: 8px;
+  border-radius: var(--r-card);
   border: 3px solid var(--ink);
   box-shadow: var(--shadow);
   touch-action: none;
   cursor: crosshair;
 }
 .swatch {
-  width: 26px; height: 26px;
-  border-radius: 4px;
+  width: 32px; height: 32px;
+  border-radius: var(--r-ctl);
   border: 3px solid var(--ink);
   cursor: pointer;
-  box-shadow: 2px 2px 0 var(--ink);
+  box-shadow: var(--shadow-sm);
 }
 .swatch.active { outline: 3px solid var(--pink-deep); outline-offset: 1px; }
 
 .sparkle::before { content: "✦ "; }
 .sparkle::after { content: " ✦"; }
-
-/* 음성방: 참가자/채팅 2열 (모바일에선 1열) */
-.vr-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-@media (max-width: 640px) {
-  .vr-cols { grid-template-columns: 1fr; }
-}
 
 /* ════════════════════════════════════════════════════════════
    방 화면 (/rooms/[id]) — 스테이지 + 우측 레일 레이아웃
@@ -438,7 +651,7 @@ canvas.whiteboard {
 .room-page {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 18px 16px 96px;
+  padding: 18px 16px calc(96px + var(--safe-b));
 }
 
 /* 방 헤더 (제목 + 정보 배지). 로고는 전역 탑바가 담당 */
@@ -449,12 +662,12 @@ canvas.whiteboard {
   flex-wrap: wrap;
   background: var(--cream);
   border: 3px solid var(--ink);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   padding: 10px 14px;
   box-shadow: var(--shadow);
   margin-bottom: 14px;
 }
-.rhead h1 { font-size: 20px; margin: 0; }
+.rhead h1 { font-size: var(--fs-lg); margin: 0; min-width: 0; overflow-wrap: anywhere; }
 
 .room-grid {
   display: grid;
@@ -468,32 +681,33 @@ canvas.whiteboard {
   gap: 14px;
   position: sticky;
   top: 74px;
+  min-width: 0;
 }
 
 /* 주제 히어로 */
 .topic-hero {
   background: #ffe9f5;
   border: 4px solid var(--ink);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   padding: 16px;
   box-shadow: var(--shadow);
 }
 .t-hero-title {
-  font-family: "Galmuri14", monospace;
-  font-size: clamp(20px, 5.5vw, 28px);
+  font-family: var(--font-11);
+  font-size: var(--fs-lg);
   line-height: 1.3;
   margin-top: 6px;
-  transition: font-size 0.12s;
   word-break: keep-all;
+  overflow-wrap: anywhere;
 }
-.t-hero-author { color: #7a6b95; font-size: 12px; }
+.t-hero-author { color: var(--muted); font-family: var(--font-11); font-size: var(--fs-sm); }
 .hero-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .hero-divider { height: 2px; background: var(--ink); opacity: 0.12; margin: 14px 0; border-radius: 2px; }
 .compact-next { display: none; }
 
 /* 컴팩트 모드: 스테이지 도구(공유/화이트보드)가 열리면 주제 축소 */
 .topic-hero.compact { padding: 10px 14px; }
-.topic-hero.compact .t-hero-title { font-size: 17px; margin-top: 2px; }
+.topic-hero.compact .t-hero-title { font-family: var(--font-14); font-size: var(--fs-base); margin-top: 2px; }
 .topic-hero.compact .hero-actions,
 .topic-hero.compact .hero-divider,
 .topic-hero.compact .acc-head,
@@ -502,9 +716,10 @@ canvas.whiteboard {
 
 .acc-head {
   display: flex; justify-content: space-between; align-items: center;
+  min-height: var(--tap);
   cursor: pointer; user-select: none;
 }
-.acc-head h4 { margin: 0; font-size: 13px; }
+.acc-head h4 { margin: 0; }
 .acc-body { margin-top: 10px; }
 .topic-li {
   display: grid;
@@ -513,7 +728,7 @@ canvas.whiteboard {
   align-items: center;
   padding: 8px 10px;
   border: 2px solid var(--ink);
-  border-radius: 6px;
+  border-radius: var(--r-ctl);
   background: #fff;
   margin-bottom: 6px;
 }
@@ -525,7 +740,7 @@ canvas.whiteboard {
   position: relative;
   background: #000;
   border: 3px solid var(--ink);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -533,88 +748,189 @@ canvas.whiteboard {
 .sharestop {
   position: absolute; top: 10px; right: 10px; z-index: 2;
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 10px; border: 2px solid #fff; border-radius: 4px;
+  min-height: var(--tap-sm);
+  padding: 6px 10px; border: 2px solid #fff; border-radius: var(--r-ctl);
   background: var(--pink-deep); color: #fff; cursor: pointer;
-  font-family: inherit; font-size: 12px;
+  font-family: var(--font-11); font-size: var(--fs-sm);
 }
-.sharestop:hover { filter: brightness(1.08); }
 
-/* 우측 레일 음성/채팅 */
-.pchips { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+/* ── 음성 상태 바 ──
+   음성은 "패널"이 아니라 "상태" — 방 상단 가로 바에 상시 노출한다.
+   모바일에선 sticky 로 고정해 어떤 탭에서든 음소거/나가기가 가능하다 */
+.room-sticky { display: grid; gap: 8px; margin-bottom: 14px; }
+.voice-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+}
+
+/* 모바일 [토론]/[채팅] 세그먼트 탭 */
+.pane-tabs {
+  display: flex;
+  border: 3px solid var(--ink);
+  border-radius: var(--r-ctl);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.pane-tabs button {
+  flex: 1;
+  min-height: var(--tap);
+  border: none;
+  background: none;
+  font-family: var(--font-14);
+  font-size: var(--fs-base);
+  color: var(--ink);
+  cursor: pointer;
+}
+.pane-tabs button + button { border-left: 3px solid var(--ink); }
+.pane-tabs button.on { background: var(--pink); font-weight: 700; }
+
+@media (max-width: 767px) {
+  .room-sticky {
+    position: sticky;
+    top: 8px;
+    z-index: 30;
+  }
+  /* 비활성 탭 패널 숨김 (데스크톱은 항상 병렬 표시) */
+  .pane-off { display: none; }
+}
+
+/* 음성 참가자 칩 — .voice-bar 안에서 남는 폭을 채운다 */
+.pchips { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; flex: 1 1 auto; min-width: 0; }
 .pchip {
   display: flex; align-items: center; gap: 6px;
+  max-width: 100%;
   padding: 4px 9px 4px 5px; border: 2px solid var(--ink);
-  border-radius: 999px; background: #fff; font-size: 12px;
-  box-shadow: 2px 2px 0 var(--ink);
+  border-radius: var(--r-pill); background: #fff;
+  font-family: var(--font-11); font-size: var(--fs-sm);
+  box-shadow: var(--shadow-sm);
 }
 .pchip .av {
-  width: 18px; height: 18px; border-radius: 50%;
+  width: 20px; height: 20px; border-radius: 50%;
   border: 2px solid var(--ink); background: #fff;
-  display: inline-flex; align-items: center; justify-content: center; font-size: 10px;
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--fs-sm);
+}
+.pchip .pname {
+  min-width: 0;
+  max-width: 110px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .pchip.spk { box-shadow: 0 0 0 2px var(--lime), 2px 2px 0 var(--ink); }
-.ctrlbar { display: flex; gap: 8px; }
-.ctrlbar .btn { flex: 1; justify-content: center; }
+.ctrlbar { display: flex; gap: 8px; flex: 0 0 auto; margin-left: auto; }
+.ctrlbar .btn { flex: 0 0 auto; justify-content: center; }
 .chat-log {
-  height: 150px; overflow-y: auto;
-  border: 3px solid var(--ink); border-radius: 8px;
-  background: #fff; padding: 8px; font-size: 13px;
+  /* 레일이 채팅 전용이므로 뷰포트에 맞춰 크게. dvh 로 모바일 주소창 변화 대응 */
+  height: clamp(240px, calc(100dvh - 400px), 640px);
+  overflow-y: auto;
+  overscroll-behavior: contain; /* 맨 위/아래에서 pull-to-refresh 로 방이 새로고침되는 사고 방지 */
+  border: 3px solid var(--ink); border-radius: var(--r-card);
+  background: #fff; padding: 8px;
+  font-family: var(--font-11); font-size: var(--fs-sm);
+  line-height: 1.6;
 }
-.chat-log .m { margin-bottom: 4px; }
+@media (max-width: 767px) {
+  /* 헤더/음성바/탭/입력창/탭바를 뺀 나머지 — 입력창이 스크롤 없이 보이게 */
+  .chat-log { height: calc(100dvh - 545px); min-height: 140px; }
+  /* 짧은 화면 백스톱: 위 계산이 어긋나도 입력창은 항상 탭바 위에 붙는다 */
+  .chat-form {
+    position: sticky;
+    bottom: calc(8px + var(--tabbar-h) + var(--safe-b));
+    background: var(--cream);
+  }
+}
+.chat-log .m { margin-bottom: 4px; overflow-wrap: anywhere; }
 
 /* 도구 런처 (＋ 도구) */
 .launcher {
-  position: fixed; right: 22px; bottom: 22px; z-index: 70;
+  position: fixed;
+  right: 22px;
+  bottom: calc(22px + var(--safe-b));
+  z-index: 70;
   display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
 }
 .fab {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 16px; border: 3px solid var(--ink); border-radius: 999px;
+  min-height: var(--tap);
+  padding: 11px 16px; border: 3px solid var(--ink); border-radius: var(--r-pill);
   background: var(--pink); color: var(--ink); cursor: pointer;
-  font-family: "Galmuri14", monospace; font-size: 14px; box-shadow: var(--shadow);
+  font-family: var(--font-14); font-size: var(--fs-base); box-shadow: var(--shadow);
 }
-.fab:hover { background: var(--pink-deep); color: #fff; }
 .fab:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
 .toolmenu {
   display: grid; gap: 8px; background: var(--cream);
-  border: 3px solid var(--ink); border-radius: 8px; padding: 10px;
+  border: 3px solid var(--ink); border-radius: var(--r-card); padding: 10px;
   box-shadow: var(--shadow); min-width: 170px;
 }
 .toolmenu .mi {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 10px; border: 2px solid var(--ink); border-radius: 4px;
-  background: #fff; cursor: pointer; font-size: 13px;
+  min-height: var(--tap);
+  padding: 9px 12px; border: 2px solid var(--ink); border-radius: var(--r-ctl);
+  background: #fff; cursor: pointer;
+  font-family: var(--font-11); font-size: var(--fs-sm);
 }
-.toolmenu .mi:hover { background: #ffe9f5; }
-.toolmenu .mh { font-size: 11px; color: #7a6b95; padding: 0 2px; }
+.toolmenu .mh { font-family: var(--font-11); font-size: var(--fs-sm); color: var(--muted); padding: 0 2px; }
 
 /* 플로팅 타이머 위젯 */
 .float-timer {
-  position: fixed; right: 22px; bottom: 84px; z-index: 65; width: 230px;
+  position: fixed;
+  right: 22px;
+  bottom: calc(84px + var(--safe-b));
+  z-index: 65;
+  width: min(230px, calc(100vw - 28px));
   background: var(--cream); border: 3px solid var(--ink);
-  border-radius: 8px; box-shadow: var(--shadow); padding: 12px;
+  border-radius: var(--r-card); box-shadow: var(--shadow); padding: 12px;
 }
 .float-timer .fh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .xbtn {
-  width: 24px; height: 24px; border: 2px solid var(--ink);
-  border-radius: 4px; background: #fff; cursor: pointer; line-height: 1;
+  position: relative;
+  width: 32px; height: 32px; border: 2px solid var(--ink);
+  border-radius: var(--r-ctl); background: #fff; cursor: pointer; line-height: 1;
+  flex: 0 0 auto;
 }
+/* 시각 크기는 32px 로 유지하되 터치 히트 영역을 44px 로 확장 */
+.xbtn::after { content: ""; position: absolute; inset: -6px; }
 .pbtn {
-  font-size: 12px; padding: 5px 10px; border: 2px solid var(--ink);
-  border-radius: 4px; background: #fff; cursor: pointer; font-family: inherit;
+  min-height: var(--tap-sm);
+  font-family: var(--font-11); font-size: var(--fs-sm);
+  padding: 5px 12px; border: 2px solid var(--ink);
+  border-radius: var(--r-ctl); background: #fff; cursor: pointer;
 }
 .pbtn.on { background: var(--pink); }
 .float-clock {
-  font-family: "GalmuriMono", "Galmuri14", monospace;
-  font-size: 34px; text-align: center; letter-spacing: 2px;
+  font-family: var(--font-mono);
+  font-size: 36px; /* GalmuriMono ×3 */
+  text-align: center; letter-spacing: 2px;
 }
 .float-clock.warn { color: var(--pink-deep); }
 
-@media (max-width: 900px) {
+/* 태블릿 (768~1023px): 우측 레일을 좁혀 스테이지가 짓눌리지 않게 */
+@media (max-width: 1023px) {
+  .room-grid { grid-template-columns: 1fr 280px; }
+}
+
+/* 모바일 (<768px): 1열 스택 + fixed 요소를 하단 탭바 위로 올림 */
+@media (max-width: 767px) {
   .room-grid { grid-template-columns: 1fr; }
   .room-rail { position: static; }
-  .launcher { right: 14px; bottom: 14px; }
-  .float-timer { right: 14px; bottom: 76px; }
+  .launcher {
+    right: 14px;
+    bottom: calc(14px + var(--tabbar-h) + var(--safe-b));
+  }
+  .float-timer {
+    right: 14px;
+    bottom: calc(76px + var(--tabbar-h) + var(--safe-b));
+  }
 }
 
 /* ── 모바일 (≤560px): 상단바 줄바꿈 + 여백 축소 ── */
@@ -624,21 +940,25 @@ canvas.whiteboard {
     gap: 8px;
     padding: 8px 12px;
   }
+  /* 공간이 되면 브랜드와 같은 줄에, 모자라면 오른쪽 정렬로 줄바꿈 */
   .topbar nav.row {
-    width: 100%;
+    margin-left: auto;
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 8px;
   }
-  .brand { font-size: 18px; }
-  .topbar .btn { padding: 6px 10px; font-size: 13px; }
+  /* 상단바가 한 줄에 들어가도록 버튼을 컴팩트하게 (탭바가 주 내비를 담당) */
+  .topbar .btn {
+    min-height: var(--tap-sm);
+    padding: 5px 10px;
+    font-family: var(--font-11);
+    font-size: var(--fs-sm);
+  }
 
-  .container { padding: 16px 12px 88px; }
-  .room-page { padding: 14px 12px 88px; }
+  .container { padding: 16px 12px calc(88px + var(--safe-b)); }
+  .room-page { padding: 14px 12px calc(88px + var(--safe-b)); }
   .hero { padding: 22px 12px 14px; }
   .topic-hero { padding: 12px; }
 
-  /* 화면 폭이 좁으면 플로팅 타이머가 넘치지 않도록 */
-  .float-timer { width: min(230px, calc(100vw - 28px)); }
   .toolmenu { min-width: 150px; }
 }

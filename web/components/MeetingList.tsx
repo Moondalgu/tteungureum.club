@@ -266,7 +266,7 @@ export function MeetingList({
             </label>
           )}
 
-          {error && <span className="small" style={{ color: "var(--pink-deep)" }}>{error}</span>}
+          {error && <span className="small err">{error}</span>}
           <div className="row" style={{ justifyContent: "flex-end", gap: 8 }}>
             <button className="btn" onClick={() => setShow(false)}>
               취소
@@ -290,10 +290,7 @@ export function MeetingList({
       </div>
 
       {visible.length === 0 ? (
-        <p
-          className="muted"
-          style={{ fontSize: 20, textAlign: "center", padding: "40px 0" }}
-        >
+        <p className="muted empty">
           {meetings.length === 0 ? (
             <>
               아직 만들어진 방이 없어요.
@@ -317,7 +314,7 @@ export function MeetingList({
               aria-label={m.title}
             />
             <div className="row spread">
-              <strong style={{ fontSize: 16 }}>{m.title}</strong>
+              <strong className="ellipsis">{m.title}</strong>
               <div className="row" style={{ gap: 8, position: "relative", zIndex: 1 }}>
                 {m.status === "confirmed" ? (
                   <span className="badge confirmed">확정 · {fmtDate(m.confirmed_date)}</span>

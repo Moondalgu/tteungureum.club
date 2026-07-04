@@ -9,6 +9,7 @@ import { FloatingTimer } from "./Countdown";
 import { VoiceRail, ShareStage } from "./VoiceRoom";
 import { RoomChat } from "./RoomChat";
 import { createClient } from "@/lib/supabase/client";
+import { isKakaoInApp, openExternalBrowser } from "@/lib/inapp";
 import type { RoomMessage, RoomTopic, Stroke, Topic } from "@/lib/types";
 
 // LiveKit 연결 옵션 — 모바일/손실 네트워크 음질 튜닝.
@@ -65,6 +66,13 @@ export function RoomShell({
   const [wbOpen, setWbOpen] = useState(false);
   const [timerOpen, setTimerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // 모바일(<768px) 전용 탭: 토론(스테이지) ↔ 채팅. 데스크톱은 항상 병렬 표시.
+  const [pane, setPane] = useState<"stage" | "chat">("stage");
+  // 카톡 인앱브라우저 여부 — SSR 하이드레이션 불일치를 피하려 마운트 후 판정
+  const [inApp, setInApp] = useState(false);
+  useEffect(() => {
+    setInApp(isKakaoInApp());
+  }, []);
 
   // 도구(화이트보드 등) 열림 상태를 방 전체에 공유하는 realtime 채널
   const toolsChan = useRef<ReturnType<
@@ -74,6 +82,11 @@ export function RoomShell({
   const compact = sharing || wbOpen;
 
   const join = useCallback(async () => {
+    // 카톡 인앱 웹뷰는 마이크 권한이 불안정 — 음성 참여는 외부 브라우저로 넘긴다
+    if (isKakaoInApp()) {
+      openExternalBrowser();
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -124,7 +137,7 @@ export function RoomShell({
   }, []);
 
   const stage = (
-    <div className="room-stage">
+    <div className={`room-stage ${pane === "stage" ? "" : "pane-off"}`}>
       <RoomTopics
         roomId={roomId}
         initialTopics={initialTopics}
@@ -138,7 +151,7 @@ export function RoomShell({
       {wbOpen && (
         <div className="card">
           <div className="row spread" style={{ marginBottom: 10 }}>
-            <h4 style={{ margin: 0, fontSize: 13 }}>🎨 화이트보드</h4>
+            <h4>🎨 화이트보드</h4>
             <button className="btn sm" onClick={() => setWhiteboard(false)}>
               ✕ 닫기
             </button>
@@ -151,46 +164,87 @@ export function RoomShell({
 
   // 채팅은 음성 연결과 무관하게 항상 표시한다.
   const rail = (
-    <div className="room-rail">
-      {conn ? (
-        <VoiceRail />
-      ) : (
-        <div className="card grid" style={{ gap: 10 }}>
-          <h4 style={{ margin: 0, fontSize: 13 }}>🎙️ 음성 · 화면공유</h4>
-          {isLoggedIn ? (
-            <>
-              <span className="muted small">
-                참여하면 마이크는 꺼진 채로 연결돼요. 마이크·화면공유는 따로 켤 수 있어요.
-              </span>
-              {error && (
-                <span className="small" style={{ color: "var(--pink-deep)" }}>
-                  {error}
-                </span>
-              )}
-              <button className="btn primary" onClick={join} disabled={loading}>
-                {loading ? "연결 중..." : "음성·화면공유 참여"}
-              </button>
-            </>
-          ) : (
-            <span className="muted small">로그인하면 음성 토론에 참여할 수 있어요.</span>
-          )}
-        </div>
-      )}
+    <div className={`room-rail ${pane === "chat" ? "" : "pane-off"}`}>
       <RoomChat
         roomId={roomId}
         userId={userId}
         nickname={nickname}
         initialMessages={initialMessages}
         isLoggedIn={isLoggedIn}
+        visible={pane === "chat"}
       />
     </div>
   );
 
-  const grid = (
-    <div className="room-grid">
-      {stage}
-      {rail}
+  // 음성 상태 바 — 방 상단 상시 노출. 모바일에선 sticky 로 고정되어
+  // 어떤 탭에 있어도 음소거/나가기가 항상 가능하다.
+  const voiceBar = (
+    <div className="voice-bar">
+      {conn ? (
+        <VoiceRail />
+      ) : (
+        <>
+          <h4>🎙️ 음성 · 화면공유</h4>
+          {isLoggedIn ? (
+            <>
+              {inApp ? (
+                <span className="muted small">
+                  카톡 브라우저에선 음성이 불안정해요 — 참여하면 외부 브라우저로
+                  열려요.
+                </span>
+              ) : (
+                <span className="muted small">
+                  참여하면 마이크는 꺼진 채로 연결돼요.
+                </span>
+              )}
+              {error && <span className="small err">{error}</span>}
+              <button
+                className="btn sm primary"
+                style={{ marginLeft: "auto" }}
+                onClick={join}
+                disabled={loading}
+              >
+                {loading ? "연결 중..." : "참여하기"}
+              </button>
+            </>
+          ) : (
+            <span className="muted small" style={{ marginLeft: "auto" }}>
+              로그인하면 음성 토론에 참여할 수 있어요.
+            </span>
+          )}
+        </>
+      )}
     </div>
+  );
+
+  const grid = (
+    <>
+      <div className="room-sticky">
+        {voiceBar}
+        {/* role=tab 은 tabpanel 연결·키보드 규약까지 요구하므로
+            단순 토글 버튼 의미론(aria-pressed)을 쓴다 */}
+        <div className="pane-tabs mobile-only" aria-label="방 화면 전환">
+          <button
+            aria-pressed={pane === "stage"}
+            className={pane === "stage" ? "on" : ""}
+            onClick={() => setPane("stage")}
+          >
+            🗣️ 토론
+          </button>
+          <button
+            aria-pressed={pane === "chat"}
+            className={pane === "chat" ? "on" : ""}
+            onClick={() => setPane("chat")}
+          >
+            💬 채팅
+          </button>
+        </div>
+      </div>
+      <div className="room-grid">
+        {stage}
+        {rail}
+      </div>
+    </>
   );
 
   return (
@@ -217,8 +271,9 @@ export function RoomShell({
         grid
       )}
 
-      {/* 도구 런처 (＋ 도구) */}
-      <div className="launcher">
+      {/* 도구 런처 (＋ 도구) — 타이머/화이트보드는 토론 탭 소속이므로
+          모바일 채팅 탭에선 숨겨 입력창을 가리지 않게 한다 */}
+      <div className={`launcher ${pane === "chat" ? "desktop-only" : ""}`}>
         {menuOpen && (
           <div className="toolmenu">
             <span className="mh">도구 추가</span>
@@ -247,11 +302,15 @@ export function RoomShell({
         </button>
       </div>
 
-      <FloatingTimer
-        roomId={roomId}
-        open={timerOpen}
-        onClose={() => setTimerOpen(false)}
-      />
+      {/* 타이머도 토론 탭 소속 — 모바일 채팅 탭에선 함께 숨긴다
+          (display:none 부모는 fixed 자식도 숨긴다) */}
+      <div className={pane === "chat" ? "desktop-only" : undefined}>
+        <FloatingTimer
+          roomId={roomId}
+          open={timerOpen}
+          onClose={() => setTimerOpen(false)}
+        />
+      </div>
     </>
   );
 }

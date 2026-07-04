@@ -98,10 +98,29 @@ export default function ProfilePage() {
     }
   }
 
+  // refresh 는 AuthListener 가 SIGNED_OUT 이벤트에서 처리한다
+  async function logout() {
+    await supabase.auth.signOut();
+    router.replace("/");
+  }
+
   if (loading) {
     return (
       <main className="container">
-        <p className="muted">불러오는 중...</p>
+        <h1>프로필 설정</h1>
+        {/* 실제 카드와 같은 구조/높이의 스켈레톤 — 로딩 후 레이아웃 점프 방지 */}
+        <div
+          className="card"
+          style={{ display: "grid", gap: 16, maxWidth: 480 }}
+          aria-busy="true"
+        >
+          <div className="row">
+            <span className="skeleton" style={{ width: 72, height: 72 }} />
+            <span className="skeleton" style={{ width: 110, height: 44 }} />
+          </div>
+          <span className="skeleton" style={{ height: 44 }} />
+          <span className="skeleton" style={{ height: 44, width: 96, justifySelf: "end" }} />
+        </div>
       </main>
     );
   }
@@ -158,11 +177,24 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* 모바일에선 상단바 로그아웃이 숨겨지므로 여기가 유일한 로그아웃 경로 */}
+      <div
+        className="card mobile-only"
+        style={{ display: "grid", gap: 10, maxWidth: 480, marginTop: 16 }}
+      >
+        <div className="row spread">
+          <span className="small muted">이 기기에서 로그아웃해요.</span>
+          <button className="btn" onClick={logout}>
+            로그아웃
+          </button>
+        </div>
+      </div>
+
       <div
         className="card"
         style={{ display: "grid", gap: 10, maxWidth: 480, marginTop: 16 }}
       >
-        <h3 style={{ margin: 0, fontSize: 15 }}>회원 탈퇴</h3>
+        <h3 style={{ margin: 0 }}>회원 탈퇴</h3>
         <p className="small muted" style={{ margin: 0 }}>
           계정과 프로필이 삭제되며 되돌릴 수 없어요.
         </p>

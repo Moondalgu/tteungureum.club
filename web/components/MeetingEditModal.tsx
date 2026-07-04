@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Overlay } from "./Overlay";
 import type { Meeting, RoomMode } from "@/lib/types";
 
 // ISO 문자열 → datetime-local 입력값(YYYY-MM-DDTHH:mm)
@@ -148,7 +149,7 @@ export function MeetingEditModal({
   }
 
   return (
-    <div className="overlay" onClick={() => !saving && onClose()}>
+    <Overlay onClose={() => !saving && onClose()}>
       <div
         className="modal"
         role="dialog"
@@ -168,8 +169,12 @@ export function MeetingEditModal({
         </div>
 
         {loading ? (
-          <div className="modal-body">
-            <p className="muted small" style={{ margin: 0 }}>불러오는 중...</p>
+          <div className="modal-body" aria-busy="true">
+            {/* 실제 폼과 같은 높이를 미리 차지해 로딩 후 레이아웃 점프를 막는다 */}
+            <span className="skeleton" style={{ height: 44 }} />
+            <span className="skeleton" style={{ height: 44 }} />
+            <span className="skeleton" style={{ height: 44 }} />
+            <span className="skeleton" style={{ height: 60 }} />
           </div>
         ) : (
           <>
@@ -266,9 +271,7 @@ export function MeetingEditModal({
                 </div>
               )}
 
-              {error && (
-                <span className="small" style={{ color: "var(--pink-deep)" }}>{error}</span>
-              )}
+              {error && <span className="small err">{error}</span>}
             </div>
 
             <div className="modal-foot">
@@ -282,6 +285,6 @@ export function MeetingEditModal({
           </>
         )}
       </div>
-    </div>
+    </Overlay>
   );
 }

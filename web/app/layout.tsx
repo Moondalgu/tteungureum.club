@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { TopBar } from "@/components/TopBar";
+import { BottomNav } from "@/components/BottomNav";
 import { AuthListener } from "@/components/AuthListener";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 
@@ -48,6 +49,8 @@ export default async function RootLayout({
             일어나게 한다. 그래야 iOS 고무줄(overscroll) 바운스가 상단바를
             끌어내리지 못한다. */}
         <div className="app-scroll">{children}</div>
+        {/* 모바일 하단 탭바 — 플렉스 흐름 마지막 자식이라 스크롤 영역이 알아서 줄어든다 */}
+        <BottomNav isLoggedIn={!!user} />
       </body>
     </html>
   );

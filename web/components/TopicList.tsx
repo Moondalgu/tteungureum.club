@@ -71,7 +71,7 @@ export function TopicList({
             value={newContent}
             onChange={(e) => setNewContent(e.target.value)}
           />
-          {error && <span className="small" style={{ color: "var(--pink-deep)" }}>{error}</span>}
+          {error && <span className="small err">{error}</span>}
           <div className="row" style={{ justifyContent: "flex-end", gap: 8 }}>
             <button className="btn" onClick={() => setAdding(false)}>
               취소

@@ -20,7 +20,8 @@ function initial(name: string) {
   return name.trim().charAt(0) || "?";
 }
 
-// 우측 레일: 마이크/공유 토글 + 나가기 + 참가자 칩
+// 음성 상태 바 내용물: 참가자 칩 + 마이크/공유/나가기.
+// 컨테이너(.voice-bar)는 RoomShell 이 제공한다 — 상단 가로 바에 상시 노출.
 export function VoiceRail() {
   const room = useRoomContext();
   const participants = useParticipants();
@@ -34,11 +35,8 @@ export function VoiceRail() {
   }, [setKrisp]);
 
   return (
-    <div className="card">
-      <div className="row spread">
-        <h4 style={{ margin: 0, fontSize: 13 }}>🎙️ 음성 ({participants.length})</h4>
-      </div>
-
+    <>
+      <h4>🎙️ {participants.length}</h4>
       <div className="pchips">
         {participants.map((p) => (
           <ParticipantChip key={p.identity} p={p} />
@@ -56,7 +54,7 @@ export function VoiceRail() {
           나가기
         </button>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -66,8 +64,11 @@ function ParticipantChip({ p }: { p: Participant }) {
   return (
     <span className={`pchip ${speaking ? "spk" : ""}`}>
       <span className="av">{initial(name)}</span>
-      {name}
-      {p.isLocal ? "(나)" : ""} {p.isMicrophoneEnabled ? "🎙️" : "🔇"}
+      <span className="pname">
+        {name}
+        {p.isLocal ? "(나)" : ""}
+      </span>
+      {p.isMicrophoneEnabled ? "🎙️" : "🔇"}
     </span>
   );
 }

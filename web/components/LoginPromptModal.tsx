@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { Overlay } from "./Overlay";
 
 // 로그인 유도 모달. 비로그인 사용자가 로그인이 필요한 액션을 시도하면 표시한다.
 // 즉시 로그인 페이지로 튕기는 대신, 의도를 보여준 뒤 로그인을 유도해 전환을 높인다.
@@ -30,7 +31,7 @@ export function LoginPromptModal({
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <Overlay onClose={onClose}>
       <div
         className="card dialog"
         role="dialog"
@@ -52,6 +53,6 @@ export function LoginPromptModal({
           </button>
         </div>
       </div>
-    </div>
+    </Overlay>
   );
 }

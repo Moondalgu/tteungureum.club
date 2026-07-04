@@ -215,24 +215,13 @@ export function RoomTopics({
                 checked={rt.done}
                 disabled={!isLoggedIn}
                 onChange={() => setDone(rt, !rt.done)}
-                style={{ width: 18, height: 18 }}
               />
               <span className="content">
                 {i + 1}. {rt.content}
                 <span className="small muted"> · {rt.author}</span>
               </span>
               {isLoggedIn && (
-                <button
-                  className="small"
-                  style={{
-                    border: "none",
-                    background: "none",
-                    color: "var(--pink-deep)",
-                    cursor: "pointer",
-                    padding: 0,
-                  }}
-                  onClick={() => remove(rt)}
-                >
+                <button className="linkbtn" onClick={() => remove(rt)}>
                   빼기
                 </button>
               )}
@@ -283,11 +272,7 @@ export function RoomTopics({
             </div>
           )}
 
-          {error && (
-            <p className="small" style={{ color: "var(--pink-deep)" }}>
-              {error}
-            </p>
-          )}
+          {error && <p className="small err">{error}</p>}
         </div>
       )}
     </div>

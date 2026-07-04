@@ -1,6 +1,8 @@
 "use client";
 
-// 재사용 확인 모달. 오버레이 클릭/취소 → onCancel, 확인 → onConfirm.
+import { Overlay } from "./Overlay";
+
+// 재사용 확인 모달. 오버레이 클릭/Esc/취소 → onCancel, 확인 → onConfirm.
 export function ConfirmDialog({
   open,
   title,
@@ -26,7 +28,7 @@ export function ConfirmDialog({
 }) {
   if (!open) return null;
   return (
-    <div className="overlay" onClick={onCancel}>
+    <Overlay onClose={onCancel}>
       <div
         className="card dialog"
         role="dialog"
@@ -40,7 +42,7 @@ export function ConfirmDialog({
           </p>
         )}
         {error && (
-          <p className="small" style={{ margin: 0, color: "var(--pink-deep)" }}>
+          <p className="small err" style={{ margin: 0 }}>
             {error}
           </p>
         )}
@@ -57,6 +59,6 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </Overlay>
   );
 }

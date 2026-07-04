@@ -36,8 +36,10 @@ export function TopBar({
       <Link href="/" className="brand">
         뜬구름클럽
       </Link>
+      {/* 모바일(<768px)에선 홈/N의상자/프로필이 하단 탭바로 내려가고,
+          상단바에는 핵심 CTA(방 만들기)와 로그인만 남긴다 */}
       <nav className="row">
-        <Link href="/box" className="btn cyan">
+        <Link href="/box" className="btn cyan desktop-only">
           N의 상자
         </Link>
         {isLoggedIn ? (
@@ -51,16 +53,16 @@ export function TopBar({
         )}
         {isLoggedIn ? (
           <>
-            <Link href="/profile" className="row" style={{ gap: 8 }}>
+            <Link href="/profile" className="row desktop-only" style={{ gap: 8 }}>
               {avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="avatar" src={avatarUrl} alt="프로필" />
+                <img className="avatar" src={avatarUrl} alt="프로필" loading="lazy" />
               ) : (
                 <span className="avatar" />
               )}
               <span className="small">{nickname ?? "프로필 설정"}</span>
             </Link>
-            <button className="btn" onClick={logout}>
+            <button className="btn desktop-only" onClick={logout}>
               로그아웃
             </button>
           </>
