@@ -23,16 +23,20 @@ export default function ProfilePage() {
   const [leaveError, setLeaveError] = useState("");
 
   // 배경 구름 모션 토글 (WCAG 2.2.2 일시정지 수단).
-  // "on"은 OS 모션최소화 설정보다 우선 재생, "off"는 정지, 미설정은 OS 를 따름.
+  // 기본은 움직임 — 끄면 "off" 저장, 켜면 저장값 제거(기본 상태 복귀).
   const [skyMotion, setSkyMotion] = useState(true);
   useEffect(() => {
-    const v = localStorage.getItem("skyMotion");
-    if (v === "off") setSkyMotion(false);
+    if (localStorage.getItem("skyMotion") === "off") setSkyMotion(false);
   }, []);
   function toggleSky(next: boolean) {
     setSkyMotion(next);
-    localStorage.setItem("skyMotion", next ? "on" : "off");
-    document.documentElement.dataset.sky = next ? "on" : "off";
+    if (next) {
+      localStorage.removeItem("skyMotion");
+      delete document.documentElement.dataset.sky;
+    } else {
+      localStorage.setItem("skyMotion", "off");
+      document.documentElement.dataset.sky = "off";
+    }
   }
 
   useEffect(() => {
