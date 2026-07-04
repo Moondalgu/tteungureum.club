@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { usePersistentToggle } from "@/lib/usePersistentToggle";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { MeetingEditModal } from "./MeetingEditModal";
+import { ShareButton } from "./ShareButton";
 import type { Meeting, RoomMode } from "@/lib/types";
 
 function fmtDate(d: string | null) {
@@ -323,6 +324,13 @@ export function MeetingList({
                 ) : (
                   <span className="badge voting">투표중</span>
                 )}
+                <ShareButton
+                  path={
+                    m.status === "confirmed" && m.room_id
+                      ? `/rooms/${m.room_id}`
+                      : `/meetings/${m.id}`
+                  }
+                />
                 {isLoggedIn && (
                   <>
                     <button className="btn sm" onClick={() => setEditing(m)}>

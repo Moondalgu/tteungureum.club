@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { RoomShell } from "@/components/RoomShell";
+import { ShareButton } from "@/components/ShareButton";
 import type { RoomMessage, RoomTopic, Stroke, Topic } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +70,7 @@ export default async function RoomPage({
         <h1>{room.title}</h1>
         <span className="badge">📅 {room.date}</span>
         <span className="badge">{room.mode === "online" ? "💻 온라인" : "📍 오프라인"}</span>
+        <ShareButton style={{ marginLeft: "auto" }} />
       </div>
 
       <RoomShell
