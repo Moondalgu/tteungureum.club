@@ -15,12 +15,18 @@ export function RoomTopics({
   boxTopics,
   isLoggedIn,
   compact = false,
+  presence,
+  voiceDock,
 }: {
   roomId: number;
   initialTopics: RoomTopic[];
   boxTopics: Topic[];
   isLoggedIn: boolean;
   compact?: boolean;
+  /** 음성 참가자 칩 — 헤더 우측에 ambient 노출 (연결 중일 때만 전달됨) */
+  presence?: React.ReactNode;
+  /** 세션 컨트롤(마이크/공유/나가기) 또는 참여 CTA — 카드 푸터 독 */
+  voiceDock?: React.ReactNode;
 }) {
   const supabase = createClient();
 
@@ -163,8 +169,9 @@ export function RoomTopics({
             ✔ 완료 {doneCount} / {items.length || 0}
           </span>
         )}
-        <div className="row" style={{ gap: 8 }}>
-          {current && <span className="t-hero-author">✍️ {current.author}</span>}
+        {/* 프레즌스는 "상태"라 헤더 우측에 조용히 (Figma 아바타 스택 패턴) */}
+        <div className="row hero-presence" style={{ gap: 8 }}>
+          {presence}
           {current && isLoggedIn && (
             <button
               className="btn primary sm compact-next"
@@ -179,6 +186,7 @@ export function RoomTopics({
       <div className="t-hero-title">
         {current ? current.content : items.length === 0 ? "아직 담긴 주제가 없어요" : "🎉 모든 주제를 마쳤어요"}
       </div>
+      {current && <div className="t-hero-author">✍️ {current.author}</div>}
 
       {current && isLoggedIn && (
         <div className="hero-actions">
@@ -275,6 +283,10 @@ export function RoomTopics({
           {error && <p className="small err">{error}</p>}
         </div>
       )}
+
+      {/* 세션 독 — 콘텐츠 액션(완료/건너뛰기)과 디바이더·정렬·스타일로 구획.
+          compact(화면공유/화이트보드) 상태에서도 접히지 않는다 */}
+      {voiceDock && <div className="voice-dock">{voiceDock}</div>}
     </div>
   );
 }

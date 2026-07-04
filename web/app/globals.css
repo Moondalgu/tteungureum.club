@@ -709,9 +709,12 @@ canvas.whiteboard {
 .topic-hero.compact .t-hero-title { font-family: var(--font-14); font-size: var(--fs-base); margin-top: 2px; }
 .topic-hero.compact .hero-actions,
 .topic-hero.compact .hero-divider,
+.topic-hero.compact .t-hero-author,
 .topic-hero.compact .acc-head,
 .topic-hero.compact .acc-body { display: none; }
 .topic-hero.compact .compact-next { display: inline-flex; }
+/* 컴팩트에서도 세션 독은 접히지 않는다 — 마이크/나가기는 항상 보여야 한다 */
+.topic-hero.compact .voice-dock { margin-top: 10px; padding-top: 8px; }
 
 .acc-head {
   display: flex; justify-content: space-between; align-items: center;
@@ -753,20 +756,19 @@ canvas.whiteboard {
   font-family: var(--font-11); font-size: var(--fs-sm);
 }
 
-/* ── 음성 상태 바 ──
-   음성은 "패널"이 아니라 "상태" — 방 상단 가로 바에 상시 노출한다.
-   모바일에선 sticky 로 고정해 어떤 탭에서든 음소거/나가기가 가능하다 */
+/* ── 방 화면 모바일 sticky 영역 (탭 전환 + 미니 음성 컨트롤) ── */
 .room-sticky { display: grid; gap: 8px; margin-bottom: 14px; }
-.voice-bar {
+
+/* 모바일 채팅 탭용 미니 음성 컨트롤 — 음소거는 어떤 탭에서도 사라지지 않는다 */
+.voice-mini {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 6px 10px;
   background: var(--cream);
   border: 3px solid var(--ink);
-  border-radius: var(--r-card);
-  box-shadow: var(--shadow);
+  border-radius: var(--r-ctl);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 모바일 [토론]/[채팅] 세그먼트 탭 */
@@ -805,7 +807,7 @@ canvas.whiteboard {
   .pane-off { display: none; }
 }
 
-/* 음성 참가자 칩 — .voice-bar 안에서 남는 폭을 채운다 */
+/* 음성 참가자 칩 */
 .pchips { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; flex: 1 1 auto; min-width: 0; }
 .pchip {
   display: flex; align-items: center; gap: 6px;
@@ -830,8 +832,25 @@ canvas.whiteboard {
   text-overflow: ellipsis;
 }
 .pchip.spk { box-shadow: 0 0 0 2px var(--lime), 2px 2px 0 var(--ink); }
-.ctrlbar { display: flex; gap: 8px; flex: 0 0 auto; margin-left: auto; }
-.ctrlbar .btn { flex: 0 0 auto; justify-content: center; }
+
+/* 히어로 헤더 프레즌스: 줄바꿈 금지, 넘치면 숨김 (+N 은 컴포넌트가 처리) */
+.hero-presence { min-width: 0; }
+.hero-presence .pchips { flex-wrap: nowrap; overflow: hidden; }
+
+/* 세션 컨트롤 독 — 히어로 카드 푸터. 콘텐츠 액션(완료/건너뛰기)과는
+   디바이더 + 정렬(나가기 우측 격리) + 크기(sm)로 "말투"를 다르게 구획한다 */
+.voice-dock {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px solid rgba(33, 19, 58, 0.12);
+}
+/* LiveKit TrackToggle 이 aria-pressed 로 켜짐 상태를 노출한다 — 켜지면 라임 */
+.voice-dock .btn[aria-pressed="true"],
+.voice-mini .btn[aria-pressed="true"] { background: var(--lime); }
 .chat-log {
   /* 레일이 채팅 전용이므로 뷰포트에 맞춰 크게. dvh 로 모바일 주소창 변화 대응 */
   height: clamp(240px, calc(100dvh - 400px), 640px);

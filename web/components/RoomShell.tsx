@@ -6,7 +6,13 @@ import { AudioPresets, type RoomOptions } from "livekit-client";
 import { RoomTopics } from "./RoomTopics";
 import { Whiteboard } from "./Whiteboard";
 import { FloatingTimer } from "./Countdown";
-import { VoiceRail, ShareStage } from "./VoiceRoom";
+import {
+  KrispSetup,
+  ShareStage,
+  VoiceControls,
+  VoiceMini,
+  VoicePresence,
+} from "./VoiceRoom";
 import { RoomChat } from "./RoomChat";
 import { createClient } from "@/lib/supabase/client";
 import { isKakaoInApp, openExternalBrowser } from "@/lib/inapp";
@@ -137,6 +143,26 @@ export function RoomShell({
     setSharing(active);
   }, []);
 
+  // 히어로 푸터의 세션 독: 미접속 시 참여 CTA 하나(점진적 공개),
+  // 연결되면 같은 자리가 마이크/공유/나가기 컨트롤로 전환된다.
+  const voiceDock = conn ? (
+    <VoiceControls />
+  ) : isLoggedIn ? (
+    <>
+      <button className="btn sm primary" onClick={join} disabled={loading}>
+        🎙️ {loading ? "연결 중..." : "음성으로 참여하기"}
+      </button>
+      <span className="muted small">
+        {inApp
+          ? "카톡 브라우저에선 외부 브라우저로 열려요."
+          : "마이크는 꺼진 채로 연결돼요."}
+      </span>
+      {error && <span className="small err">{error}</span>}
+    </>
+  ) : (
+    <span className="muted small">로그인하면 음성 토론에 참여할 수 있어요.</span>
+  );
+
   const stage = (
     <div className={`room-stage ${pane === "stage" ? "" : "pane-off"}`}>
       <RoomTopics
@@ -145,6 +171,8 @@ export function RoomShell({
         boxTopics={boxTopics}
         isLoggedIn={isLoggedIn}
         compact={compact}
+        presence={conn ? <VoicePresence /> : undefined}
+        voiceDock={voiceDock}
       />
 
       {conn && <ShareStage onSharingChange={onSharingChange} />}
@@ -177,54 +205,14 @@ export function RoomShell({
     </div>
   );
 
-  // 음성 상태 바 — 방 상단 상시 노출. 모바일에선 sticky 로 고정되어
-  // 어떤 탭에 있어도 음소거/나가기가 항상 가능하다.
-  const voiceBar = (
-    <div className="voice-bar">
-      {conn ? (
-        <VoiceRail />
-      ) : (
-        <>
-          <h4>🎙️ 음성 · 화면공유</h4>
-          {isLoggedIn ? (
-            <>
-              {inApp ? (
-                <span className="muted small">
-                  카톡 브라우저에선 음성이 불안정해요 — 참여하면 외부 브라우저로
-                  열려요.
-                </span>
-              ) : (
-                <span className="muted small">
-                  참여하면 마이크는 꺼진 채로 연결돼요.
-                </span>
-              )}
-              {error && <span className="small err">{error}</span>}
-              <button
-                className="btn sm primary"
-                style={{ marginLeft: "auto" }}
-                onClick={join}
-                disabled={loading}
-              >
-                {loading ? "연결 중..." : "참여하기"}
-              </button>
-            </>
-          ) : (
-            <span className="muted small" style={{ marginLeft: "auto" }}>
-              로그인하면 음성 토론에 참여할 수 있어요.
-            </span>
-          )}
-        </>
-      )}
-    </div>
-  );
-
   const grid = (
     <>
-      <div className="room-sticky">
-        {voiceBar}
+      {/* 모바일 전용 sticky: 탭 전환 + (연결 중 채팅 탭이면) 미니 음성 컨트롤.
+          음소거는 어떤 탭에서도 화면에서 사라지면 안 된다 */}
+      <div className="room-sticky mobile-only">
         {/* role=tab 은 tabpanel 연결·키보드 규약까지 요구하므로
             단순 토글 버튼 의미론(aria-pressed)을 쓴다 */}
-        <div className="pane-tabs mobile-only" aria-label="방 화면 전환">
+        <div className="pane-tabs" aria-label="방 화면 전환">
           <button
             aria-pressed={pane === "stage"}
             className={pane === "stage" ? "on" : ""}
@@ -240,6 +228,7 @@ export function RoomShell({
             <IconChat /> 채팅
           </button>
         </div>
+        {conn && pane === "chat" && <VoiceMini />}
       </div>
       <div className="room-grid">
         {stage}
@@ -266,6 +255,7 @@ export function RoomShell({
           style={{ display: "contents" }}
         >
           <RoomAudioRenderer />
+          <KrispSetup />
           {grid}
         </LiveKitRoom>
       ) : (

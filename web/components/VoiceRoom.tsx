@@ -20,41 +20,78 @@ function initial(name: string) {
   return name.trim().charAt(0) || "?";
 }
 
-// 음성 상태 바 내용물: 참가자 칩 + 마이크/공유/나가기.
-// 컨테이너(.voice-bar)는 RoomShell 이 제공한다 — 상단 가로 바에 상시 노출.
-export function VoiceRail() {
-  const room = useRoomContext();
-  const participants = useParticipants();
-
-  // Krisp AI 노이즈 제거(LiveKit Cloud 내장) — 키보드/생활소음 제거로 음성 명료도 향상.
-  // 미지원 브라우저(구형 iOS 등)에선 조용히 건너뛰고 브라우저 기본 noiseSuppression 사용.
+// Krisp AI 노이즈 제거(LiveKit Cloud 내장) — 키보드/생활소음 제거로 음성 명료도 향상.
+// 미지원 브라우저(구형 iOS 등)에선 조용히 건너뛰고 브라우저 기본 noiseSuppression 사용.
+// UI 없이 연결당 1회만 마운트한다 (RoomShell 의 LiveKitRoom 바로 아래).
+export function KrispSetup() {
   const krisp = useKrispNoiseFilter();
   const setKrisp = krisp.setNoiseFilterEnabled;
   useEffect(() => {
     Promise.resolve(setKrisp(true)).catch(() => {});
   }, [setKrisp]);
+  return null;
+}
 
+// 참가자 프레즌스 칩 — 주제 히어로 헤더 우측에 조용히(ambient) 노출.
+// 줄바꿈 없이 최대 5명 + "+N" 오버플로 (아바타 그룹 표준 관례).
+const MAX_CHIPS = 5;
+
+export function VoicePresence() {
+  const participants = useParticipants();
+  const shown = participants.slice(0, MAX_CHIPS);
+  const extra = participants.length - shown.length;
+  return (
+    <div className="pchips">
+      {shown.map((p) => (
+        <ParticipantChip key={p.identity} p={p} />
+      ))}
+      {extra > 0 && <span className="pchip">+{extra}</span>}
+    </div>
+  );
+}
+
+// 세션 컨트롤 — 주제 히어로 푸터(.voice-dock)에 배치.
+// 마이크가 첫 번째(가장 빈번한 토글), 나가기는 우측 끝에 danger 로 격리(오클릭 방지).
+export function VoiceControls() {
+  const room = useRoomContext();
   return (
     <>
-      <h4>🎙️ {participants.length}</h4>
-      <div className="pchips">
-        {participants.map((p) => (
-          <ParticipantChip key={p.identity} p={p} />
-        ))}
-      </div>
-
-      <div className="ctrlbar">
-        <TrackToggle source={Track.Source.Microphone} className="btn sm" showIcon={false}>
-          🎙️ 마이크
-        </TrackToggle>
-        <TrackToggle source={Track.Source.ScreenShare} className="btn sm" showIcon={false}>
-          🖥️ 공유
-        </TrackToggle>
-        <button className="btn sm" onClick={() => room.disconnect()}>
-          나가기
-        </button>
-      </div>
+      <TrackToggle source={Track.Source.Microphone} className="btn sm" showIcon={false}>
+        🎙️ 마이크
+      </TrackToggle>
+      <TrackToggle source={Track.Source.ScreenShare} className="btn sm" showIcon={false}>
+        🖥️ 공유
+      </TrackToggle>
+      <button
+        className="btn sm danger"
+        style={{ marginLeft: "auto" }}
+        onClick={() => room.disconnect()}
+      >
+        나가기
+      </button>
     </>
+  );
+}
+
+// 모바일 채팅 탭용 미니 컨트롤 — 음소거는 어떤 화면에서도 사라지면 안 된다
+// (Zoom auto-hide 의 교훈). 채팅 탭에서도 sticky 영역에 남는다.
+export function VoiceMini() {
+  const room = useRoomContext();
+  const participants = useParticipants();
+  return (
+    <div className="voice-mini">
+      <span className="small">🎙️ {participants.length}명</span>
+      <TrackToggle source={Track.Source.Microphone} className="btn sm" showIcon={false}>
+        마이크
+      </TrackToggle>
+      <button
+        className="btn sm"
+        style={{ marginLeft: "auto" }}
+        onClick={() => room.disconnect()}
+      >
+        나가기
+      </button>
+    </div>
   );
 }
 
