@@ -22,6 +22,19 @@ export default function ProfilePage() {
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState("");
 
+  // 배경 구름 모션 토글 (WCAG 2.2.2 일시정지 수단).
+  // "on"은 OS 모션최소화 설정보다 우선 재생, "off"는 정지, 미설정은 OS 를 따름.
+  const [skyMotion, setSkyMotion] = useState(true);
+  useEffect(() => {
+    const v = localStorage.getItem("skyMotion");
+    if (v === "off") setSkyMotion(false);
+  }, []);
+  function toggleSky(next: boolean) {
+    setSkyMotion(next);
+    localStorage.setItem("skyMotion", next ? "on" : "off");
+    document.documentElement.dataset.sky = next ? "on" : "off";
+  }
+
   useEffect(() => {
     (async () => {
       const {
@@ -175,6 +188,24 @@ export default function ProfilePage() {
             {saving ? "저장 중..." : "저장"}
           </button>
         </div>
+      </div>
+
+      <div
+        className="card"
+        style={{ display: "grid", gap: 10, maxWidth: 480, marginTop: 16 }}
+      >
+        <h3 style={{ margin: 0 }}>화면 효과</h3>
+        <label className="row small">
+          <input
+            type="checkbox"
+            checked={skyMotion}
+            onChange={(e) => toggleSky(e.target.checked)}
+          />
+          배경 구름 움직이기
+        </label>
+        <p className="small muted" style={{ margin: 0 }}>
+          끄면 구름이 제자리에 멈춰요.
+        </p>
       </div>
 
       {/* 모바일에선 상단바 로그아웃이 숨겨지므로 여기가 유일한 로그아웃 경로 */}

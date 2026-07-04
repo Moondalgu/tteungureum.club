@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
+import { Sky } from "@/components/Sky";
 import { AuthListener } from "@/components/AuthListener";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 
@@ -56,6 +57,7 @@ export default async function RootLayout({
   return (
     <html lang="ko">
       <body>
+        <Sky />
         <AuthListener />
         <TopBar
           isLoggedIn={!!user}
