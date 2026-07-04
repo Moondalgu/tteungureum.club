@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ConfirmDialog } from "./ConfirmDialog";
 import type { Stroke, StrokePayload } from "@/lib/types";
 
 // 내부 캔버스 해상도(고정). 화면에는 CSS 로 늘려서 표시.
@@ -25,6 +26,8 @@ export function Whiteboard({
   const [color, setColor] = useState(COLORS[0]);
   const [size, setSize] = useState(4);
   const [tool, setTool] = useState<"pen" | "eraser">("pen");
+  // 전체 지우기는 방 전원의 보드 + DB 획을 삭제(복구 불가) — 반드시 확인
+  const [confirmClear, setConfirmClear] = useState(false);
 
   // 한 획 그리기 (erase=true 면 지우개: 픽셀 제거)
   function drawStroke(ctx: CanvasRenderingContext2D, s: StrokePayload) {
@@ -168,13 +171,13 @@ export function Whiteboard({
           className={`btn ${tool === "pen" ? "primary" : ""}`}
           onClick={() => setTool("pen")}
         >
-          ✏️ 펜
+          펜
         </button>
         <button
           className={`btn ${tool === "eraser" ? "primary" : ""}`}
           onClick={() => setTool("eraser")}
         >
-          🧽 지우개
+          지우개
         </button>
         <label className="small row" style={{ gap: 6 }}>
           굵기
@@ -186,10 +189,22 @@ export function Whiteboard({
             onChange={(e) => setSize(Number(e.target.value))}
           />
         </label>
-        <button className="btn" onClick={clearBoard}>
+        <button className="btn" onClick={() => setConfirmClear(true)}>
           전체 지우기
         </button>
       </div>
+      <ConfirmDialog
+        open={confirmClear}
+        title="보드를 전부 지울까요?"
+        message="방에 있는 모두의 화이트보드가 지워지고 되돌릴 수 없어요."
+        confirmText="전체 지우기"
+        danger
+        onConfirm={() => {
+          setConfirmClear(false);
+          clearBoard();
+        }}
+        onCancel={() => setConfirmClear(false)}
+      />
       <canvas
         ref={canvasRef}
         className="whiteboard"

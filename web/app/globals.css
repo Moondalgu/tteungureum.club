@@ -21,6 +21,9 @@
   --cream: #fff7fb;
   --ink: #21133a;
   --muted: #7a6b95;
+  /* 텍스트 전용 핑크 — #ff4fa3 은 흰 배경 대비 3.0:1 로 AA 미달이라
+     링크/에러/danger 등 "글자"에는 이 어두운 톤을 쓴다 (배경용은 --pink-deep 유지) */
+  --pink-ink: #c2185b;
 
   /* 하드 섀도 (blur 0 불변) */
   --shadow-sm: 2px 2px 0 var(--ink);
@@ -177,7 +180,7 @@ h1 { font-size: var(--fs-lg); font-family: var(--font-11); }
 h3 { font-size: var(--fs-base); }
 h4 { margin: 0; font-size: var(--fs-sm); font-family: var(--font-11); letter-spacing: 0.5px; }
 
-a { color: var(--pink-deep); text-decoration: none; }
+a { color: var(--pink-ink); text-decoration: none; }
 
 img { image-rendering: pixelated; max-width: 100%; }
 
@@ -275,6 +278,9 @@ header.topbar {
   box-shadow: var(--shadow-sm);
 }
 .backbtn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+/* 시각 36px 유지, 히트 영역만 44px 로 확장 */
+.backbtn { position: relative; }
+.backbtn::after { content: ""; position: absolute; inset: -4px; }
 .htitle {
   font-family: var(--font-14);
   font-size: var(--fs-base);
@@ -363,7 +369,7 @@ header.topbar {
   box-shadow: var(--shadow-sm);
 }
 .btn.sm:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
-.btn.danger { background: var(--pink-deep); color: #fff; }
+.btn.danger { background: var(--pink-ink); color: #fff; }
 
 /* hover 는 진짜 포인터가 있는 기기에서만 — 터치 기기는 탭 후 에뮬레이트된
    :hover 가 남아 버튼이 계속 반쯤 눌린 상태로 보이는 문제가 있다 */
@@ -395,7 +401,7 @@ header.topbar {
   padding: 4px 8px;
   border: none;
   background: none;
-  color: var(--pink-deep);
+  color: var(--pink-ink);
   cursor: pointer;
   font-family: var(--font-11);
   font-size: var(--fs-sm);
@@ -530,7 +536,16 @@ header.topbar {
 .grid { display: grid; gap: 12px; }
 
 /* 에러/경고 텍스트 */
-.err { color: var(--pink-deep); }
+.err { color: var(--pink-ink); }
+
+/* 필터/설정용 체크박스 라벨 — 13px 기본 체크박스는 WCAG 24px 최저선 미달 */
+.chk { min-height: var(--tap); cursor: pointer; }
+.chk input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  accent-color: var(--pink-deep);
+}
 
 /* 좁은 단일 컬럼 페이지(프로필 등) 중앙 정렬 */
 .narrow {
@@ -789,9 +804,17 @@ canvas.whiteboard {
 /* 컴팩트에서도 세션 독은 접히지 않는다 — 마이크/나가기는 항상 보여야 한다 */
 .topic-hero.compact .voice-dock { margin-top: 10px; padding-top: 8px; }
 
+/* 아코디언 헤더 — 키보드/스크린리더 접근을 위해 button 요소 */
 .acc-head {
   display: flex; justify-content: space-between; align-items: center;
+  width: 100%;
   min-height: var(--tap);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   cursor: pointer; user-select: none;
 }
 .acc-head h4 { margin: 0; }
@@ -825,7 +848,7 @@ canvas.whiteboard {
   display: inline-flex; align-items: center; gap: 6px;
   min-height: var(--tap-sm);
   padding: 6px 10px; border: 2px solid #fff; border-radius: var(--r-ctl);
-  background: var(--pink-deep); color: #fff; cursor: pointer;
+  background: var(--pink-ink); color: #fff; cursor: pointer;
   font-family: var(--font-11); font-size: var(--fs-sm);
 }
 
@@ -969,9 +992,12 @@ canvas.whiteboard {
 }
 .toolmenu .mi {
   display: flex; align-items: center; gap: 10px;
+  width: 100%;
   min-height: var(--tap);
   padding: 9px 12px; border: 2px solid var(--ink); border-radius: var(--r-ctl);
   background: #fff; cursor: pointer;
+  color: inherit;
+  text-align: left;
   font-family: var(--font-11); font-size: var(--fs-sm);
 }
 .toolmenu .mh { font-family: var(--font-11); font-size: var(--fs-sm); color: var(--muted); padding: 0 2px; }
@@ -1042,6 +1068,9 @@ canvas.whiteboard {
     justify-content: flex-end;
     gap: 8px;
   }
+  /* 좁은 화면: 제목이 한 줄 전체를 쓰고 상태 배지는 둘째 줄로 */
+  .meeting-item > .row.spread > .ellipsis { flex-basis: 100%; }
+
   /* 상단바가 한 줄에 들어가도록 버튼을 컴팩트하게 (탭바가 주 내비를 담당) */
   .topbar .btn {
     min-height: var(--tap-sm);

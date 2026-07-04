@@ -198,7 +198,7 @@ export default function ProfilePage() {
         style={{ display: "grid", gap: 10, marginTop: 16 }}
       >
         <h3 style={{ margin: 0 }}>화면 효과</h3>
-        <label className="row small">
+        <label className="row small chk">
           <input
             type="checkbox"
             checked={skyMotion}

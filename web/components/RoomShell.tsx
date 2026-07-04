@@ -16,7 +16,7 @@ import {
 import { RoomChat } from "./RoomChat";
 import { createClient } from "@/lib/supabase/client";
 import { isKakaoInApp, openExternalBrowser } from "@/lib/inapp";
-import { IconChat, IconPlus, IconTalk } from "./icons";
+import { IconBrush, IconChat, IconClock, IconMic, IconPlus, IconTalk } from "./icons";
 import type { RoomMessage, RoomTopic, Stroke, Topic } from "@/lib/types";
 
 // LiveKit 연결 옵션 — 모바일/손실 네트워크 음질 튜닝.
@@ -150,7 +150,7 @@ export function RoomShell({
   ) : isLoggedIn ? (
     <>
       <button className="btn sm primary" onClick={join} disabled={loading}>
-        🎙️ {loading ? "연결 중..." : "음성으로 참여하기"}
+        <IconMic size={12} /> {loading ? "연결 중..." : "음성으로 참여하기"}
       </button>
       <span className="muted small">
         {inApp
@@ -180,9 +180,12 @@ export function RoomShell({
       {wbOpen && (
         <div className="card">
           <div className="row spread" style={{ marginBottom: 10 }}>
-            <h4>🎨 화이트보드</h4>
+            <h4 className="row" style={{ gap: 6 }}>
+              <IconBrush size={12} /> 화이트보드
+            </h4>
+            {/* 닫기는 방 전원에게 브로드캐스트됨 — 라벨로 예고 */}
             <button className="btn sm" onClick={() => setWhiteboard(false)}>
-              ✕ 닫기
+              ✕ 모두 닫기
             </button>
           </div>
           <Whiteboard roomId={roomId} initialStrokes={strokes} />
@@ -267,25 +270,27 @@ export function RoomShell({
       <div className={`launcher ${pane === "chat" ? "desktop-only" : ""}`}>
         {menuOpen && (
           <div className="toolmenu">
-            <span className="mh">도구 추가</span>
-            <div
+            <span className="mh">도구 추가 — 모두에게 보여요</span>
+            <button
+              type="button"
               className="mi"
               onClick={() => {
                 setTimerOpen(true);
                 setMenuOpen(false);
               }}
             >
-              ⏳ <span>타이머</span>
-            </div>
-            <div
+              <IconClock size={12} /> <span>타이머</span>
+            </button>
+            <button
+              type="button"
               className="mi"
               onClick={() => {
                 setWhiteboard(true);
                 setMenuOpen(false);
               }}
             >
-              🎨 <span>화이트보드</span>
-            </div>
+              <IconBrush size={12} /> <span>화이트보드</span>
+            </button>
           </div>
         )}
         <button className="fab" onClick={() => setMenuOpen((v) => !v)}>

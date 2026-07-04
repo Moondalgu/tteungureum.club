@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { IconClock } from "./icons";
 
 const PRESETS = [1, 3, 5, 10]; // 분
 
@@ -91,7 +92,9 @@ export function FloatingTimer({
   return (
     <div className="float-timer">
       <div className="fh">
-        <b>⏳ 타이머</b>
+        <b className="row" style={{ gap: 6 }}>
+          <IconClock size={12} /> 타이머
+        </b>
         <button className="xbtn" onClick={close} title="닫기">
           ✕
         </button>

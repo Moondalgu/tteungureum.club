@@ -151,6 +151,71 @@ export function IconChat(props: PixelIconProps) {
   );
 }
 
+/* 마이크 */
+export function IconMic(props: PixelIconProps) {
+  return (
+    <Px {...props}>
+      <rect x="5" y="1" width="2" height="1" />
+      <rect x="4" y="2" width="4" height="3" />
+      <rect x="5" y="5" width="2" height="1" />
+      <rect x="2" y="4" width="1" height="2" />
+      <rect x="9" y="4" width="1" height="2" />
+      <rect x="3" y="6" width="6" height="1" />
+      <rect x="5" y="7" width="2" height="2" />
+      <rect x="3" y="9" width="6" height="1" />
+    </Px>
+  );
+}
+
+/* 시계 (타이머) */
+export function IconClock(props: PixelIconProps) {
+  return (
+    <Px {...props}>
+      <rect x="3" y="1" width="6" height="1" />
+      <rect x="2" y="2" width="1" height="1" />
+      <rect x="9" y="2" width="1" height="1" />
+      <rect x="1" y="3" width="1" height="6" />
+      <rect x="10" y="3" width="1" height="6" />
+      <rect x="2" y="9" width="1" height="1" />
+      <rect x="9" y="9" width="1" height="1" />
+      <rect x="3" y="10" width="6" height="1" />
+      <rect x="5" y="3" width="1" height="3" />
+      <rect x="6" y="6" width="2" height="1" />
+    </Px>
+  );
+}
+
+/* 연필 (화이트보드) */
+export function IconBrush(props: PixelIconProps) {
+  return (
+    <Px {...props}>
+      <rect x="8" y="1" width="2" height="2" />
+      <rect x="7" y="3" width="2" height="1" />
+      <rect x="6" y="4" width="2" height="1" />
+      <rect x="5" y="5" width="2" height="1" />
+      <rect x="4" y="6" width="2" height="1" />
+      <rect x="3" y="7" width="2" height="1" />
+      <rect x="2" y="8" width="2" height="1" />
+      <rect x="2" y="9" width="1" height="1" />
+    </Px>
+  );
+}
+
+/* 체크 (완료) */
+export function IconCheck(props: PixelIconProps) {
+  return (
+    <Px {...props}>
+      <rect x="8" y="3" width="2" height="1" />
+      <rect x="7" y="4" width="2" height="1" />
+      <rect x="6" y="5" width="2" height="1" />
+      <rect x="5" y="6" width="2" height="1" />
+      <rect x="4" y="7" width="2" height="1" />
+      <rect x="2" y="5" width="2" height="1" />
+      <rect x="3" y="6" width="2" height="1" />
+    </Px>
+  );
+}
+
 /* 공유 (위로 나가는 화살표 + 트레이) */
 export function IconShare(props: PixelIconProps) {
   return (

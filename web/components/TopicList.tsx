@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { usePersistentToggle } from "@/lib/usePersistentToggle";
+import { IconCheck, IconCloud } from "./icons";
 import type { Topic } from "@/lib/types";
 
 export function TopicList({
@@ -47,7 +48,7 @@ export function TopicList({
     <>
       {/* 필터 / 추가 바 */}
       <div className="row spread" style={{ marginBottom: 12 }}>
-        <label className="row small">
+        <label className="row small chk">
           <input
             type="checkbox"
             checked={hideDone}
@@ -92,7 +93,9 @@ export function TopicList({
           const isSelected = t.status === "selected";
           return (
             <div key={t.id} className="topic">
-              <span style={{ fontSize: 18 }}>{isDone ? "✔" : "☁"}</span>
+              <span style={{ marginTop: 2 }}>
+                {isDone ? <IconCheck /> : <IconCloud />}
+              </span>
               <div>
                 <div className="content">{t.content}</div>
                 <div className="row meta" style={{ gap: 10 }}>

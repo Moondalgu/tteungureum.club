@@ -5,12 +5,14 @@ import {
   TrackToggle,
   VideoTrack,
   useIsSpeaking,
+  useLocalParticipant,
   useParticipants,
   useRoomContext,
   useTracks,
 } from "@livekit/components-react";
 import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
 import { Track, type Participant } from "livekit-client";
+import { IconMic } from "./icons";
 
 // 음성 + 화면공유 + 휘발성 채팅 (LiveKit) 조각들.
 // LiveKitRoom 컨텍스트는 RoomShell 이 제공한다. 화면공유 영상은 왼쪽 스테이지에,
@@ -52,15 +54,17 @@ export function VoicePresence() {
 
 // 세션 컨트롤 — 주제 히어로 푸터(.voice-dock)에 배치.
 // 마이크가 첫 번째(가장 빈번한 토글), 나가기는 우측 끝에 danger 로 격리(오클릭 방지).
+// 상태는 색(라임)+텍스트("켬/꺼짐") 이중 부호화 — 색만으로는 색약 사용자가 오인한다.
 export function VoiceControls() {
   const room = useRoomContext();
+  const { isMicrophoneEnabled, isScreenShareEnabled } = useLocalParticipant();
   return (
     <>
       <TrackToggle source={Track.Source.Microphone} className="btn sm" showIcon={false}>
-        🎙️ 마이크
+        <IconMic size={12} /> 마이크 {isMicrophoneEnabled ? "켬" : "꺼짐"}
       </TrackToggle>
       <TrackToggle source={Track.Source.ScreenShare} className="btn sm" showIcon={false}>
-        🖥️ 공유
+        화면공유 {isScreenShareEnabled ? "중" : ""}
       </TrackToggle>
       <button
         className="btn sm danger"
@@ -78,11 +82,14 @@ export function VoiceControls() {
 export function VoiceMini() {
   const room = useRoomContext();
   const participants = useParticipants();
+  const { isMicrophoneEnabled } = useLocalParticipant();
   return (
     <div className="voice-mini">
-      <span className="small">🎙️ {participants.length}명</span>
+      <span className="small row" style={{ gap: 4 }}>
+        <IconMic size={12} /> {participants.length}명
+      </span>
       <TrackToggle source={Track.Source.Microphone} className="btn sm" showIcon={false}>
-        마이크
+        마이크 {isMicrophoneEnabled ? "켬" : "꺼짐"}
       </TrackToggle>
       <button
         className="btn sm"

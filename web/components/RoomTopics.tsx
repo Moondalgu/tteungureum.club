@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { MAX_TOPICS_PER_ROOM, type RoomTopic, type Topic } from "@/lib/types";
 
 const byPos = (a: RoomTopic, b: RoomTopic) => a.position - b.position;
@@ -38,6 +39,8 @@ export function RoomTopics({
   const [showBox, setShowBox] = useState(false);
   const [newContent, setNewContent] = useState("");
   const [error, setError] = useState("");
+  // 방에서 직접 만든 주제(topic_id null)는 빼면 영구 유실 — 확인 후 삭제
+  const [pendingRemove, setPendingRemove] = useState<RoomTopic | null>(null);
 
   const usedTopicIds = new Set(items.map((i) => i.topic_id).filter(Boolean));
   const availableBox = box.filter((t) => !usedTopicIds.has(t.id));
@@ -132,8 +135,15 @@ export function RoomTopics({
 
   async function remove(rt: RoomTopic) {
     if (!isLoggedIn) return;
+    const prevItems = items;
     setItems((prev) => prev.filter((i) => i.id !== rt.id));
-    await supabase.from("room_topics").delete().eq("id", rt.id);
+    const { error } = await supabase.from("room_topics").delete().eq("id", rt.id);
+    if (error) {
+      // 실패를 조용히 삼키지 않는다 — 목록 원복 + 안내
+      setItems(prevItems);
+      setError(`빼기 실패: ${error.message}`);
+      return;
+    }
     if (rt.topic_id) {
       await supabase
         .from("topics")
@@ -203,10 +213,15 @@ export function RoomTopics({
 
       <div className="hero-divider" />
 
-      <div className="acc-head" onClick={() => setAccOpen((v) => !v)}>
+      <button
+        type="button"
+        className="acc-head"
+        aria-expanded={accOpen}
+        onClick={() => setAccOpen((v) => !v)}
+      >
         <h4>📋 전체 주제 ({doneCount}/{items.length})</h4>
         <span className="small muted">{accOpen ? "접기 ▴" : "펼치기 ▾"}</span>
-      </div>
+      </button>
 
       {accOpen && (
         <div className="acc-body">
@@ -229,7 +244,12 @@ export function RoomTopics({
                 <span className="small muted"> · {rt.author}</span>
               </span>
               {isLoggedIn && (
-                <button className="linkbtn" onClick={() => remove(rt)}>
+                <button
+                  className="linkbtn"
+                  onClick={() =>
+                    rt.topic_id ? remove(rt) : setPendingRemove(rt)
+                  }
+                >
                   빼기
                 </button>
               )}
@@ -287,6 +307,19 @@ export function RoomTopics({
       {/* 세션 독 — 콘텐츠 액션(완료/건너뛰기)과 디바이더·정렬·스타일로 구획.
           compact(화면공유/화이트보드) 상태에서도 접히지 않는다 */}
       {voiceDock && <div className="voice-dock">{voiceDock}</div>}
+
+      <ConfirmDialog
+        open={!!pendingRemove}
+        title="주제를 뺄까요?"
+        message="방에서 직접 추가한 주제라 빼면 다시 찾을 수 없어요."
+        confirmText="빼기"
+        danger
+        onConfirm={() => {
+          if (pendingRemove) remove(pendingRemove);
+          setPendingRemove(null);
+        }}
+        onCancel={() => setPendingRemove(null)}
+      />
     </div>
   );
 }

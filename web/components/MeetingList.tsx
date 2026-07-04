@@ -222,7 +222,7 @@ export function MeetingList({
             </select>
           </label>
 
-          <label className="row small">
+          <label className="row small chk">
             <input
               type="checkbox"
               checked={vote}
@@ -284,7 +284,7 @@ export function MeetingList({
       )}
 
       <div className="row spread" style={{ marginBottom: 12 }}>
-        <label className="row small">
+        <label className="row small chk">
           <input
             type="checkbox"
             checked={hideDone}

@@ -86,16 +86,21 @@ export function MeetingDetail({
     setError("");
 
     const has = myVotes.has(dateId);
-    setMyVotes((prev) => {
-      const next = new Set(prev);
-      if (has) next.delete(dateId);
-      else next.add(dateId);
-      return next;
-    });
-    setCounts((prev) => ({
-      ...prev,
-      [dateId]: Math.max(0, (prev[dateId] ?? 0) + (has ? -1 : 1)),
-    }));
+    const apply = (delta: number, add: boolean) => {
+      setMyVotes((prev) => {
+        const next = new Set(prev);
+        if (add) next.add(dateId);
+        else next.delete(dateId);
+        return next;
+      });
+      setCounts((prev) => ({
+        ...prev,
+        [dateId]: Math.max(0, (prev[dateId] ?? 0) + delta),
+      }));
+    };
+
+    // 낙관적 반영 — 실패하면 역연산으로 롤백해 화면과 DB 를 일치시킨다
+    apply(has ? -1 : 1, !has);
 
     if (has) {
       const { error } = await supabase
@@ -103,16 +108,45 @@ export function MeetingDetail({
         .delete()
         .eq("meeting_date_id", dateId)
         .eq("user_id", userId);
-      if (error) setError(`취소 실패: ${error.message}`);
+      if (error) {
+        apply(1, true);
+        setError(`취소 실패: ${error.message}`);
+      }
     } else {
       const { error } = await supabase.from("meeting_votes").insert({
         meeting_date_id: dateId,
         meeting_id: meeting.id,
         user_id: userId,
       });
-      if (error) setError(`투표 실패: ${error.message}`);
+      if (error) {
+        apply(-1, false);
+        setError(`투표 실패: ${error.message}`);
+      }
     }
   }
+
+  // 투표는 같이 보면서 하는 화면 — 남의 표도 실시간 반영 (마감 전만)
+  useEffect(() => {
+    if (confirmed || deadlinePassed) return;
+    const ch = supabase
+      .channel(`meeting-votes-${meeting.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "meeting_votes",
+          filter: `meeting_id=eq.${meeting.id}`,
+        },
+        // DELETE 페이로드엔 PK 만 올 수 있어 증분 대신 가볍게 재조회
+        () => reload()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meeting.id, confirmed, deadlinePassed]);
 
   // 저장 후 최신 날짜/표를 다시 읽어 화면 갱신
   async function reload() {
@@ -160,9 +194,12 @@ export function MeetingDetail({
 
       <div className="row meta" style={{ gap: 10, marginBottom: 16 }}>
         <span>{meeting.mode === "online" ? "💻 온라인" : "📍 오프라인"}</span>
-        <span>
-          ⏰ 마감 {new Date(meeting.vote_deadline).toLocaleString("ko-KR")}
-        </span>
+        {/* 확정 후엔 마감시각이 무의미(단일 날짜 모임은 합성된 과거 시각) */}
+        {!confirmed && (
+          <span>
+            ⏰ 마감 {new Date(meeting.vote_deadline).toLocaleString("ko-KR")}
+          </span>
+        )}
       </div>
 
       {confirmed && (
@@ -182,6 +219,9 @@ export function MeetingDetail({
 
       {finalizing && <p className="muted small">날짜 확정 처리 중...</p>}
 
+      {/* 투표 없이 날짜 하나로 확정된 모임엔 "후보 날짜/0표"가 무의미 */}
+      {!(confirmed && dates.length <= 1) && (
+        <>
       <h3 style={{ marginBottom: 8 }}>후보 날짜</h3>
       {!confirmed && !deadlinePassed && (
         <p className="small muted" style={{ marginTop: 0 }}>
@@ -212,6 +252,8 @@ export function MeetingDetail({
           </button>
         );
       })}
+        </>
+      )}
 
       {error && (
         <p className="small err">{error}</p>

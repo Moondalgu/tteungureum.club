@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { IconChat } from "./icons";
 import type { RoomMessage } from "@/lib/types";
 
 // 방 채팅(DB 영구 저장 + 실시간). LiveKit 음성 연결과 무관하게 항상 동작한다.
@@ -25,6 +26,7 @@ export function RoomChat({
   const [messages, setMessages] = useState<RoomMessage[]>(initialMessages);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const logRef = useRef<HTMLDivElement>(null);
   const [supabase] = useState(() => createClient());
 
@@ -66,6 +68,7 @@ export function RoomChat({
     const t = text.trim();
     if (!t || sending || !userId) return;
     setSending(true);
+    setSendError("");
     setText("");
     const { error } = await supabase.from("room_messages").insert({
       room_id: roomId,
@@ -74,22 +77,46 @@ export function RoomChat({
       content: t,
     });
     setSending(false);
-    if (error) setText(t); // 실패 시 입력 복원
+    if (error) {
+      // 실패를 조용히 삼키지 않는다 — 입력 복원 + 안내
+      setText(t);
+      setSendError("전송에 실패했어요. 다시 시도해 주세요.");
+    }
+  }
+
+  // 메시지 시각 (같은 날이면 HH:MM, 다른 날이면 M/D HH:MM)
+  function fmtTime(iso: string) {
+    const d = new Date(iso);
+    const now = new Date();
+    const hm = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    return d.toDateString() === now.toDateString()
+      ? hm
+      : `${d.getMonth() + 1}/${d.getDate()} ${hm}`;
   }
 
   return (
     <div className="card">
-      <h4 style={{ margin: "0 0 10px" }}>💬 채팅</h4>
+      <h4 className="row" style={{ margin: "0 0 10px", gap: 6 }}>
+        <IconChat size={12} /> 채팅
+      </h4>
       <div className="chat-log" ref={logRef}>
         {messages.length === 0 && (
           <div className="muted small">아직 메시지가 없어요.</div>
         )}
         {messages.map((m) => (
           <div key={m.id} className="m">
-            <strong>{m.name}</strong>: {m.content}
+            <strong>{m.name}</strong>: {m.content}{" "}
+            <span className="muted" style={{ fontSize: 12 }}>
+              {fmtTime(m.created_at)}
+            </span>
           </div>
         ))}
       </div>
+      {sendError && (
+        <p className="small err" style={{ margin: "8px 0 0" }}>
+          {sendError}
+        </p>
+      )}
       {isLoggedIn ? (
         <form className="row chat-form" style={{ gap: 6, marginTop: 8 }} onSubmit={onSubmit}>
           <input

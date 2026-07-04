@@ -31,7 +31,7 @@ export async function generateMetadata({
     openGraph: {
       title: `${room.title} — 뜬구름클럽`,
       description,
-      images: [{ url: "/og.png", width: 1200, height: 630, alt: "뜬구름클럽" }],
+      images: [{ url: "/og-v2.png", width: 1200, height: 630, alt: "뜬구름클럽" }],
     },
   };
 }
