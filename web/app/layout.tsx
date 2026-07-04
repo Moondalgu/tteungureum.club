@@ -5,9 +5,28 @@ import { BottomNav } from "@/components/BottomNav";
 import { AuthListener } from "@/components/AuthListener";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://tteungureum-club.vercel.app";
+
 export const metadata: Metadata = {
-  title: "뜬구름클럽",
-  description: "주제를 정해 자유롭게 토론하는 모임",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "뜬구름클럽 ☁",
+    template: "%s — 뜬구름클럽",
+  },
+  description:
+    "뜬구름 잡는 주제로 모이는 N들의 토론 클럽. 주제 뽑고, 날짜 투표하고, 음성으로 떠들어요.",
+  openGraph: {
+    type: "website",
+    siteName: "뜬구름클럽",
+    title: "뜬구름클럽 ☁",
+    description:
+      "뜬구름 잡는 주제로 모이는 N들의 토론 클럽. 주제 뽑고, 날짜 투표하고, 음성으로 떠들어요.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "뜬구름클럽" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export const viewport: Viewport = {

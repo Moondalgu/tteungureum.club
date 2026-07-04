@@ -1,10 +1,40 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient, getCurrentUser } from "@/lib/supabase/server";
 import { RoomShell } from "@/components/RoomShell";
 import { ShareButton } from "@/components/ShareButton";
 import type { RoomMessage, RoomTopic, Stroke, Topic } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+// 카톡 공유 시 방 제목이 보이도록 동적 OG.
+// 주의: openGraph 는 상위(layout)와 얕은 병합이라 images 를 다시 명시해야 한다.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const roomId = Number(id);
+  if (!Number.isFinite(roomId)) return {};
+  const supabase = await createClient();
+  const { data: room } = await supabase
+    .from("rooms")
+    .select("title, date")
+    .eq("id", roomId)
+    .single();
+  if (!room) return {};
+  const description = `☁ ${room.date} 토론방이 열렸어요. 들어와서 같이 떠들어요!`;
+  return {
+    title: room.title,
+    description,
+    openGraph: {
+      title: `${room.title} — 뜬구름클럽`,
+      description,
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: "뜬구름클럽" }],
+    },
+  };
+}
 
 export default async function RoomPage({
   params,
