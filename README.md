@@ -3,7 +3,7 @@
 MBTI N들이 모여 뜬구름 잡는 주제로 토론하는 모임 커뮤니티 툴.
 
 - **N의 상자** — 카톡 오픈채팅 공지 댓글을 수집해 만든 주제 풀
-- **모임** — 후보 날짜에 투표 → 마감되면 자동 확정 → 디스코드 채널 생성 + 알림
+- **모임** — 후보 날짜에 투표 → 마감되면 자동 확정 → 토론 방 생성
 - **방** — 주제를 골라 토론, 진행완료 체크, 실시간 화이트보드 + 카운트다운
 - **카카오 로그인** + 닉네임/프로필 설정
 - 디자인: Y2K 픽셀 (Galmuri 폰트)
@@ -18,7 +18,7 @@ reader/   PC 카카오톡 데스크톱 수집기 (Python, uiautomation)
 ## 스택
 - **FE/SSR**: Next.js 15 (App Router, TypeScript) → Vercel
 - **DB/Auth/Realtime/Storage**: Supabase (Postgres, Kakao OAuth)
-- **알림/채널**: Discord 봇 (REST API)
+- **음성/화면공유**: LiveKit Cloud (WebRTC)
 - **수집기**: Python `uiautomation` (Windows 전용)
 
 ---
@@ -44,15 +44,7 @@ reader/   PC 카카오톡 데스크톱 수집기 (Python, uiautomation)
    (`https://YOUR-PROJECT.supabase.co/auth/v1/callback`)
 4. 동의 항목에서 닉네임/프로필 이미지 설정(범위 제한 시 앱 내에서 직접 설정)
 
-## 3. Discord 봇 설정
-
-1. [Discord 개발자포털](https://discord.com/developers/applications) → New Application → Bot 생성
-2. **Bot Token** 복사 → `DISCORD_BOT_TOKEN`
-3. 봇을 서버에 초대(OAuth2 URL Generator, scope=`bot`, 권한=`Manage Channels`)
-4. 서버(길드) ID 복사 → `DISCORD_GUILD_ID` (개발자 모드 켜고 서버 우클릭 > ID 복사)
-5. (선택) 특정 카테고리 밑에 채널을 만들려면 카테고리 ID → `DISCORD_CATEGORY_ID`
-
-## 4. 웹 로컬 실행 / 배포
+## 3. 웹 로컬 실행 / 배포
 
 ```bash
 cd web
@@ -64,7 +56,7 @@ npm run dev                  # http://localhost:3000
 **Vercel 배포**: 레포 연결 → `web` 디렉터리를 루트로 지정 → 환경변수 입력
 (`.env.example` 의 모든 키) → 커스텀 도메인 연결 후 `NEXT_PUBLIC_SITE_URL` 설정.
 
-## 5. PC 카톡 수집기 (Windows)
+## 4. PC 카톡 수집기 (Windows)
 
 PC 카카오톡에 부계정으로 로그인 후 대상 오픈채팅방을 열어둔 상태로 실행.
 
@@ -96,6 +88,6 @@ python kakao_reader.py --dump     # UI 트리 디버그 출력
 1. 카톡 공지 댓글 → 수집기 → **N의 상자**(`/box`)에 주제 자동 적재
 2. **모임**(`/`) 생성 → 후보 날짜 + 투표 마감일시 설정
 3. 모임원들이 가능한 날짜에 투표(여러 개 선택 가능)
-4. 마감 시각이 지나 페이지 접속 시 자동 확정 → 디스코드 채널 생성 + 링크 알림
+4. 마감 시각이 지나 페이지 접속 시 자동 확정 → 토론 방 자동 생성
 5. **방**(`/rooms/[id]`) 입장 → N의 상자에서 주제 꺼내기 / 직접 추가
 6. 주제 진행 후 ✔ 체크, 화이트보드로 함께 그리기, 카운트다운으로 시간 관리

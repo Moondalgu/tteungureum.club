@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
+import { AudioPresets, type RoomOptions } from "livekit-client";
 import { RoomTopics } from "./RoomTopics";
 import { Whiteboard } from "./Whiteboard";
 import { FloatingTimer } from "./Countdown";
@@ -9,6 +10,25 @@ import { VoiceRail, ShareStage } from "./VoiceRoom";
 import { RoomChat } from "./RoomChat";
 import { createClient } from "@/lib/supabase/client";
 import type { RoomMessage, RoomTopic, Stroke, Topic } from "@/lib/types";
+
+// LiveKit 연결 옵션 — 모바일/손실 네트워크 음질 튜닝.
+// - adaptiveStream/dynacast: 화면공유 영상이 셀룰러 대역폭을 독식해 음성이 끊기는 것 방지
+// - audioCaptureDefaults: 에코제거/노이즈억제/자동게인 명시(브라우저별 편차 제거) → 동시 발화 안정
+// - publishDefaults: RED(중복 인코딩)+DTX 명시로 패킷손실 ~20-30% 복구, 무음 구간 대역폭 절약
+const roomOptions: RoomOptions = {
+  adaptiveStream: true,
+  dynacast: true,
+  audioCaptureDefaults: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true,
+  },
+  publishDefaults: {
+    red: true,
+    dtx: true,
+    audioPreset: AudioPresets.music, // 48kbps mono — 음성 명료도/모바일 안정 균형점
+  },
+};
 
 // 방 화면 오케스트레이터.
 // - 좌측 스테이지: 주제 히어로(상시) + 화면공유 영상/화이트보드(소환 시)
@@ -182,6 +202,7 @@ export function RoomShell({
           connect={true}
           audio={false}
           video={false}
+          options={roomOptions}
           onDisconnected={() => {
             setConn(null);
             setSharing(false);

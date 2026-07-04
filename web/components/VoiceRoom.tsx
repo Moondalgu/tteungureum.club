@@ -9,6 +9,7 @@ import {
   useRoomContext,
   useTracks,
 } from "@livekit/components-react";
+import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
 import { Track, type Participant } from "livekit-client";
 
 // 음성 + 화면공유 + 휘발성 채팅 (LiveKit) 조각들.
@@ -23,6 +24,14 @@ function initial(name: string) {
 export function VoiceRail() {
   const room = useRoomContext();
   const participants = useParticipants();
+
+  // Krisp AI 노이즈 제거(LiveKit Cloud 내장) — 키보드/생활소음 제거로 음성 명료도 향상.
+  // 미지원 브라우저(구형 iOS 등)에선 조용히 건너뛰고 브라우저 기본 noiseSuppression 사용.
+  const krisp = useKrispNoiseFilter();
+  const setKrisp = krisp.setNoiseFilterEnabled;
+  useEffect(() => {
+    Promise.resolve(setKrisp(true)).catch(() => {});
+  }, [setKrisp]);
 
   return (
     <div className="card">
