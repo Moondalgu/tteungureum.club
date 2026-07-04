@@ -128,7 +128,8 @@ body {
   background-size: 480px 360px;
   image-rendering: pixelated;
   will-change: transform;
-  animation: sky-drift 80s linear infinite;
+  /* 480px/106.7s ≈ 4.5px/s — 기존 80s 에서 25% 감속 (오너 요청) */
+  animation: sky-drift 106.7s linear infinite;
 }
 @keyframes sky-drift {
   to { transform: translate3d(480px, 0, 0); }
@@ -163,7 +164,7 @@ html[data-sky="off"] .sky .cl { animation-play-state: paused; }
   /* 구름 드리프트는 기본 재생 유지(오너 결정) — 끄기는 프로필 > 화면 효과 토글로.
      위 * 규칙이 duration 을 죽이므로 여기서 되살린다 */
   .sky .cl {
-    animation-duration: 80s !important;
+    animation-duration: 106.7s !important;
     animation-iteration-count: infinite !important;
   }
 }
