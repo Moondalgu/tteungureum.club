@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { MeetingEditModal } from "./MeetingEditModal";
+import { IconClock, IconMonitor, IconPin, IconStar } from "./icons";
 import type { Meeting, MeetingDate } from "@/lib/types";
 
 function weekday(d: string) {
@@ -193,19 +194,27 @@ export function MeetingDetail({
       )}
 
       <div className="row meta" style={{ gap: 10, marginBottom: 16 }}>
-        <span>{meeting.mode === "online" ? "💻 온라인" : "📍 오프라인"}</span>
+        <span className="row" style={{ gap: 4 }}>
+          {meeting.mode === "online" ? <IconMonitor size={12} /> : <IconPin size={12} />}
+          {meeting.mode === "online" ? "온라인" : "오프라인"}
+        </span>
         {/* 확정 후엔 마감시각이 무의미(단일 날짜 모임은 합성된 과거 시각) */}
         {!confirmed && (
-          <span>
-            ⏰ 마감 {new Date(meeting.vote_deadline).toLocaleString("ko-KR")}
+          <span className="row" style={{ gap: 4 }}>
+            <IconClock size={12} /> 마감{" "}
+            {new Date(meeting.vote_deadline).toLocaleString("ko-KR")}
           </span>
         )}
       </div>
 
       {confirmed && (
         <div className="card" style={{ marginBottom: 16, background: "var(--lime)" }}>
-          <div style={{ fontSize: 16 }}>
-            🎉 확정일: <b>{meeting.confirmed_date} ({meeting.confirmed_date && weekday(meeting.confirmed_date)})</b>
+          <div className="row" style={{ gap: 6 }}>
+            <IconStar size={12} /> 확정일:{" "}
+            <b>
+              {meeting.confirmed_date} (
+              {meeting.confirmed_date && weekday(meeting.confirmed_date)})
+            </b>
           </div>
           {roomId && (
             <div className="row" style={{ gap: 8, marginTop: 12 }}>

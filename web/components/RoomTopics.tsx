@@ -172,7 +172,7 @@ export function RoomTopics({
       <div className="row spread">
         {current ? (
           <span className="badge selected">
-            🔵 지금 토론 중 · {curIndex + 1} / {items.length}
+            지금 토론 중 · {curIndex + 1} / {items.length}
           </span>
         ) : (
           <span className="badge done">
@@ -194,7 +194,7 @@ export function RoomTopics({
       </div>
 
       <div className="t-hero-title">
-        {current ? current.content : items.length === 0 ? "아직 담긴 주제가 없어요" : "🎉 모든 주제를 마쳤어요"}
+        {current ? current.content : items.length === 0 ? "아직 담긴 주제가 없어요" : "✦ 모든 주제를 마쳤어요"}
       </div>
       {current && <div className="t-hero-author">✍️ {current.author}</div>}
 

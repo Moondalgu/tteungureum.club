@@ -151,6 +151,47 @@ export function IconChat(props: PixelIconProps) {
   );
 }
 
+/* 모니터 (온라인) */
+export function IconMonitor(props: PixelIconProps) {
+  return (
+    <Px {...props}>
+      <rect x="1" y="2" width="10" height="1" />
+      <rect x="1" y="3" width="1" height="4" />
+      <rect x="10" y="3" width="1" height="4" />
+      <rect x="1" y="7" width="10" height="1" />
+      <rect x="5" y="8" width="2" height="2" />
+      <rect x="3" y="10" width="6" height="1" />
+    </Px>
+  );
+}
+
+/* 맵핀 (오프라인) */
+export function IconPin(props: PixelIconProps) {
+  return (
+    <Px {...props}>
+      <rect x="4" y="1" width="4" height="1" />
+      <rect x="3" y="2" width="2" height="2" />
+      <rect x="7" y="2" width="2" height="2" />
+      <rect x="3" y="4" width="6" height="1" />
+      <rect x="4" y="5" width="4" height="2" />
+      <rect x="5" y="7" width="2" height="3" />
+    </Px>
+  );
+}
+
+/* 반짝이 (확정/축하) */
+export function IconStar(props: PixelIconProps) {
+  return (
+    <Px {...props}>
+      <rect x="5" y="1" width="2" height="3" />
+      <rect x="5" y="8" width="2" height="3" />
+      <rect x="1" y="5" width="3" height="2" />
+      <rect x="8" y="5" width="3" height="2" />
+      <rect x="4" y="4" width="4" height="4" />
+    </Px>
+  );
+}
+
 /* 마이크 */
 export function IconMic(props: PixelIconProps) {
   return (

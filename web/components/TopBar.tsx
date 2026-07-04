@@ -68,14 +68,14 @@ export function TopBar({
         </Link>
         {isLoggedIn ? (
           <Link href="/?new=1" className="btn primary desktop-only">
-            방 만들기
+            모임 만들기
           </Link>
         ) : (
           <button
             className="btn primary desktop-only"
             onClick={() => setShowLoginPrompt(true)}
           >
-            방 만들기
+            모임 만들기
           </button>
         )}
         {isLoggedIn ? (
@@ -102,7 +102,7 @@ export function TopBar({
 
       <LoginPromptModal
         open={showLoginPrompt}
-        message="방을 만들려면 로그인이 필요해요. 로그인하면 바로 방 만들기로 이어집니다."
+        message="모임을 만들려면 로그인이 필요해요. 로그인하면 바로 모임 만들기로 이어집니다."
         next="/?new=1"
         onClose={() => setShowLoginPrompt(false)}
       />

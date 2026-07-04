@@ -9,7 +9,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { LoginPromptModal } from "./LoginPromptModal";
 import { MeetingEditModal } from "./MeetingEditModal";
 import { ShareButton } from "./ShareButton";
-import { IconPlus } from "./icons";
+import { IconClock, IconMonitor, IconPin, IconPlus } from "./icons";
 import type { Meeting, RoomMode } from "@/lib/types";
 
 function fmtDate(d: string | null) {
@@ -191,7 +191,7 @@ export function MeetingList({
     <>
       {show && (
         <div className="card" style={{ marginBottom: 16, display: "grid", gap: 12 }}>
-          <h3 style={{ margin: 0 }}>새 방 만들기</h3>
+          <h3 style={{ margin: 0 }}>새 모임 만들기</h3>
           <label>
             <div className="small muted" style={{ marginBottom: 6 }}>제목</div>
             <input
@@ -277,7 +277,7 @@ export function MeetingList({
               취소
             </button>
             <button className="btn primary" onClick={createMeeting} disabled={saving}>
-              {saving ? "생성 중..." : "방 만들기"}
+              {saving ? "생성 중..." : "모임 만들기"}
             </button>
           </div>
         </div>
@@ -290,7 +290,7 @@ export function MeetingList({
             checked={hideDone}
             onChange={(e) => setHideDone(e.target.checked)}
           />
-          진행 완료한 방 숨기기
+          진행 완료한 모임 숨기기
         </label>
       </div>
 
@@ -298,12 +298,12 @@ export function MeetingList({
         <p className="muted empty">
           {meetings.length === 0 ? (
             <>
-              아직 만들어진 방이 없어요.
+              아직 만들어진 모임이 없어요.
               <br />
-              방 만들기로 시작해 보세요.
+              모임 만들기로 시작해 보세요.
             </>
           ) : (
-            "표시할 방이 없어요."
+            "표시할 모임이 없어요."
           )}
         </p>
       ) : (
@@ -333,8 +333,15 @@ export function MeetingList({
             )}
             <div className="row spread" style={{ marginTop: 10 }}>
               <div className="row meta" style={{ gap: 10, marginTop: 0 }}>
-                <span>{m.mode === "online" ? "💻 온라인" : "📍 오프라인"}</span>
-                {m.status === "voting" && <span>⏰ 마감 {fmtDeadline(m.vote_deadline)}</span>}
+                <span className="row" style={{ gap: 4 }}>
+                  {m.mode === "online" ? <IconMonitor size={12} /> : <IconPin size={12} />}
+                  {m.mode === "online" ? "온라인" : "오프라인"}
+                </span>
+                {m.status === "voting" && (
+                  <span className="row" style={{ gap: 4 }}>
+                    <IconClock size={12} /> 마감 {fmtDeadline(m.vote_deadline)}
+                  </span>
+                )}
               </div>
               <div className="row card-actions" style={{ gap: 6, position: "relative", zIndex: 1 }}>
                 <ShareButton
@@ -393,23 +400,23 @@ export function MeetingList({
               ?.scrollTo({ top: 0, behavior: "smooth" });
           }}
         >
-          <IconPlus size={12} /> 방 만들기
+          <IconPlus size={12} /> 모임 만들기
         </button>
       )}
 
       <LoginPromptModal
         open={showLoginPrompt}
-        message="방을 만들려면 로그인이 필요해요. 로그인하면 바로 방 만들기로 이어집니다."
+        message="모임을 만들려면 로그인이 필요해요. 로그인하면 바로 모임 만들기로 이어집니다."
         next="/?new=1"
         onClose={() => setShowLoginPrompt(false)}
       />
 
       <ConfirmDialog
         open={!!pendingDelete}
-        title="방을 삭제할까요?"
+        title="모임을 삭제할까요?"
         message={
           pendingDelete
-            ? `"${pendingDelete.title}" 방과 관련된 채팅·주제·기록이 모두 삭제됩니다. 되돌릴 수 없어요.`
+            ? `"${pendingDelete.title}" 모임과 관련된 채팅·주제·기록이 모두 삭제됩니다. 되돌릴 수 없어요.`
             : undefined
         }
         confirmText="삭제"
