@@ -12,14 +12,14 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "뜬구름클럽 ☁",
+    default: "뜬구름클럽",
     template: "%s — 뜬구름클럽",
   },
   description: "뜬구름 잡는 주제로 모이는 N들의 토론 클럽",
   openGraph: {
     type: "website",
     siteName: "뜬구름클럽",
-    title: "뜬구름클럽 ☁",
+    title: "뜬구름클럽",
     description: "뜬구름 잡는 주제로 모이는 N들의 토론 클럽",
     images: [{ url: "/og.png", width: 1200, height: 630, alt: "뜬구름클럽" }],
   },
