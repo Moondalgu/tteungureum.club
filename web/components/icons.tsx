@@ -151,6 +151,21 @@ export function IconChat(props: PixelIconProps) {
   );
 }
 
+/* 공유 (위로 나가는 화살표 + 트레이) */
+export function IconShare(props: PixelIconProps) {
+  return (
+    <Px {...props}>
+      <rect x="5" y="1" width="2" height="1" />
+      <rect x="3" y="2" width="2" height="1" />
+      <rect x="7" y="2" width="2" height="1" />
+      <rect x="5" y="2" width="2" height="6" />
+      <rect x="1" y="6" width="1" height="4" />
+      <rect x="10" y="6" width="1" height="4" />
+      <rect x="1" y="10" width="10" height="1" />
+    </Px>
+  );
+}
+
 /* 뒤로가기 셰브론 */
 export function IconChevronLeft(props: PixelIconProps) {
   return (

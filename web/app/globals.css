@@ -532,6 +532,12 @@ header.topbar {
 /* 에러/경고 텍스트 */
 .err { color: var(--pink-deep); }
 
+/* 좁은 단일 컬럼 페이지(프로필 등) 중앙 정렬 */
+.narrow {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
 /* 빈 상태 */
 .empty {
   text-align: center;
@@ -596,11 +602,10 @@ input.field, textarea.field, select.field {
   box-shadow: var(--shadow);
 }
 .meeting-item { grid-template-columns: 1fr; }
-/* 카드 헤더: 좁은 화면에서 제목이 먼저 줄을 차지하고 배지/버튼이 아래로 감싸며
-   내려가게 해 오른쪽 잘림을 막는다 */
+/* 카드 헤더/푸터: 좁은 화면에서 오른쪽 잘림 없이 줄바꿈 */
 .meeting-item > .row.spread { flex-wrap: wrap; }
 .meeting-item > .row.spread > .ellipsis { flex: 1 1 160px; }
-.meeting-item > .row.spread > .row {
+.meeting-item .card-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
   margin-left: auto;

@@ -124,19 +124,17 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <main className="container">
-        <h1>프로필 설정</h1>
-        {/* 실제 카드와 같은 구조/높이의 스켈레톤 — 로딩 후 레이아웃 점프 방지 */}
-        <div
-          className="card"
-          style={{ display: "grid", gap: 16, maxWidth: 480 }}
-          aria-busy="true"
-        >
-          <div className="row">
-            <span className="skeleton" style={{ width: 72, height: 72 }} />
-            <span className="skeleton" style={{ width: 110, height: 44 }} />
+        <div className="narrow">
+          <h1>프로필 설정</h1>
+          {/* 실제 카드와 같은 구조/높이의 스켈레톤 — 로딩 후 레이아웃 점프 방지 */}
+          <div className="card" style={{ display: "grid", gap: 16 }} aria-busy="true">
+            <div className="row">
+              <span className="skeleton" style={{ width: 72, height: 72 }} />
+              <span className="skeleton" style={{ width: 110, height: 44 }} />
+            </div>
+            <span className="skeleton" style={{ height: 44 }} />
+            <span className="skeleton" style={{ height: 44, width: 96, justifySelf: "end" }} />
           </div>
-          <span className="skeleton" style={{ height: 44 }} />
-          <span className="skeleton" style={{ height: 44, width: 96, justifySelf: "end" }} />
         </div>
       </main>
     );
@@ -144,8 +142,9 @@ export default function ProfilePage() {
 
   return (
     <main className="container">
+      <div className="narrow">
       <h1>프로필 설정</h1>
-      <div className="card" style={{ display: "grid", gap: 16, maxWidth: 480 }}>
+      <div className="card" style={{ display: "grid", gap: 16 }}>
         <div className="row">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -196,7 +195,7 @@ export default function ProfilePage() {
 
       <div
         className="card"
-        style={{ display: "grid", gap: 10, maxWidth: 480, marginTop: 16 }}
+        style={{ display: "grid", gap: 10, marginTop: 16 }}
       >
         <h3 style={{ margin: 0 }}>화면 효과</h3>
         <label className="row small">
@@ -215,7 +214,7 @@ export default function ProfilePage() {
       {/* 모바일에선 상단바 로그아웃이 숨겨지므로 여기가 유일한 로그아웃 경로 */}
       <div
         className="card mobile-only"
-        style={{ display: "grid", gap: 10, maxWidth: 480, marginTop: 16 }}
+        style={{ display: "grid", gap: 10, marginTop: 16 }}
       >
         <div className="row spread">
           <span className="small muted">이 기기에서 로그아웃해요.</span>
@@ -227,7 +226,7 @@ export default function ProfilePage() {
 
       <div
         className="card"
-        style={{ display: "grid", gap: 10, maxWidth: 480, marginTop: 16 }}
+        style={{ display: "grid", gap: 10, marginTop: 16 }}
       >
         <h3 style={{ margin: 0 }}>회원 탈퇴</h3>
         <p className="small muted" style={{ margin: 0 }}>
@@ -241,6 +240,7 @@ export default function ProfilePage() {
             회원 탈퇴
           </button>
         </div>
+      </div>
       </div>
 
       <ConfirmDialog

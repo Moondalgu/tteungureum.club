@@ -318,14 +318,25 @@ export function MeetingList({
               className="stretch-link"
               aria-label={m.title}
             />
+            {/* 카드 구조: 헤더(제목|상태) / 바디(설명) / 푸터(메타|액션) —
+                상태 배지는 정체성이라 헤더에, 버튼은 액션이라 푸터 우측에 */}
             <div className="row spread">
               <strong className="ellipsis">{m.title}</strong>
-              <div className="row" style={{ gap: 8, position: "relative", zIndex: 1 }}>
-                {m.status === "confirmed" ? (
-                  <span className="badge confirmed">확정 · {fmtDate(m.confirmed_date)}</span>
-                ) : (
-                  <span className="badge voting">투표중</span>
-                )}
+              {m.status === "confirmed" ? (
+                <span className="badge confirmed">확정 · {fmtDate(m.confirmed_date)}</span>
+              ) : (
+                <span className="badge voting">투표중</span>
+              )}
+            </div>
+            {m.description && (
+              <div className="small muted" style={{ marginTop: 6 }}>{m.description}</div>
+            )}
+            <div className="row spread" style={{ marginTop: 10 }}>
+              <div className="row meta" style={{ gap: 10, marginTop: 0 }}>
+                <span>{m.mode === "online" ? "💻 온라인" : "📍 오프라인"}</span>
+                {m.status === "voting" && <span>⏰ 마감 {fmtDeadline(m.vote_deadline)}</span>}
+              </div>
+              <div className="row card-actions" style={{ gap: 6, position: "relative", zIndex: 1 }}>
                 <ShareButton
                   path={
                     m.status === "confirmed" && m.room_id
@@ -350,13 +361,6 @@ export function MeetingList({
                   </>
                 )}
               </div>
-            </div>
-            {m.description && (
-              <div className="small muted" style={{ marginTop: 6 }}>{m.description}</div>
-            )}
-            <div className="row meta" style={{ gap: 10, marginTop: 6 }}>
-              <span>{m.mode === "online" ? "💻 온라인" : "📍 오프라인"}</span>
-              {m.status === "voting" && <span>⏰ 마감 {fmtDeadline(m.vote_deadline)}</span>}
             </div>
           </div>
         ))

@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
+import { IconShare } from "./icons";
 
 // 방 링크를 클립보드에 복사하는 버튼.
 // path 를 주면 origin + path (예: /rooms/12) 를, 없으면 현재 페이지 URL을 복사한다.
 export function ShareButton({
   path,
-  label = "🔗 공유",
+  label,
   className = "btn sm cyan",
   style,
 }: {
   path?: string;
-  label?: string;
+  label?: ReactNode;
   className?: string;
   style?: CSSProperties;
 }) {
@@ -48,7 +49,15 @@ export function ShareButton({
       onClick={copy}
       aria-label="방 링크 복사"
     >
-      {copied ? "✅ 복사됨!" : label}
+      {copied ? (
+        "복사됨!"
+      ) : (
+        label ?? (
+          <>
+            <IconShare size={12} /> 공유
+          </>
+        )
+      )}
     </button>
   );
 }
