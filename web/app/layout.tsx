@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "뜬구름클럽",
     title: "뜬구름클럽",
     description: "뜬구름 잡는 주제로 모이는 N들의 토론 클럽",
-    images: [{ url: "/og-v2.png", width: 1200, height: 630, alt: "뜬구름클럽" }],
+    images: [{ url: "/og-v3.png", width: 1200, height: 630, alt: "뜬구름클럽" }],
   },
   twitter: {
     card: "summary_large_image",
