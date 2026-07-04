@@ -96,8 +96,9 @@ export function TopicList({
               <div>
                 <div className="content">{t.content}</div>
                 <div className="row meta" style={{ gap: 10 }}>
-                  <span>{t.author}</span>
-                  <span>{(t.source_date ?? t.created_at)?.slice(0, 10)}</span>
+                  <span>
+                    {t.author} · {(t.source_date ?? t.created_at)?.slice(0, 10)}
+                  </span>
                   {isDone && <span className="badge done">✔ 진행완료</span>}
                   {isSelected && <span className="badge selected">방에 담김</span>}
                 </div>
