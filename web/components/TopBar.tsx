@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { LoginPromptModal } from "./LoginPromptModal";
+import { BrandCloud } from "./icons";
 
 export function TopBar({
   isLoggedIn,
@@ -34,6 +35,7 @@ export function TopBar({
   return (
     <header className="topbar">
       <Link href="/" className="brand">
+        <BrandCloud />
         뜬구름클럽
       </Link>
       {/* 모바일(<768px)에선 홈/N의상자/프로필이 하단 탭바로 내려가고,

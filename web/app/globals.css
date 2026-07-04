@@ -208,6 +208,9 @@ header.topbar {
   border-bottom: 4px solid var(--ink);
 }
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-14);
   font-weight: 700;
   font-size: var(--fs-lg);
@@ -220,11 +223,7 @@ header.topbar {
     2px -2px 0 var(--ink), -2px 2px 0 var(--ink),
     4px 6px 0 rgba(33, 19, 58, 0.25);
 }
-.brand::before {
-  content: "☁";
-  margin-right: 6px;
-  text-shadow: none;
-}
+.brand svg { flex: 0 0 auto; }
 
 /* ── 모바일 하단 탭바 (<768px) ──
    body 플렉스 흐름의 마지막 자식으로 두어 .app-scroll 이 알아서 줄어든다.
@@ -256,7 +255,7 @@ header.topbar {
   font-size: var(--fs-sm);
   line-height: 1.2;
 }
-.tabbar .tab .ticon { font-size: 20px; line-height: 1; }
+.tabbar .tab svg { display: block; }
 .tabbar .tab.active {
   background: rgba(255, 255, 255, 0.55);
   box-shadow: inset 0 4px 0 var(--pink-deep);
@@ -781,6 +780,10 @@ canvas.whiteboard {
 }
 .pane-tabs button {
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-height: var(--tap);
   border: none;
   background: none;

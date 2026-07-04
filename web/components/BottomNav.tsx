@@ -4,6 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LoginPromptModal } from "./LoginPromptModal";
+import {
+  IconBox,
+  IconBoxFill,
+  IconCloud,
+  IconCloudFill,
+  IconUser,
+  IconUserFill,
+} from "./icons";
 
 // 모바일 전용 하단 탭바 (<768px, CSS 로 표시 제어).
 // 데스크톱 상단바와 항목이 동일하다 — IA 는 같고 배치만 다르게(썸존).
@@ -26,9 +34,7 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
         className={`tab ${homeActive ? "active" : ""}`}
         aria-current={homeActive ? "page" : undefined}
       >
-        <span className="ticon" aria-hidden>
-          ☁
-        </span>
+        {homeActive ? <IconCloudFill /> : <IconCloud />}
         홈
       </Link>
       <Link
@@ -36,9 +42,7 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
         className={`tab ${boxActive ? "active" : ""}`}
         aria-current={boxActive ? "page" : undefined}
       >
-        <span className="ticon" aria-hidden>
-          📦
-        </span>
+        {boxActive ? <IconBoxFill /> : <IconBox />}
         N의 상자
       </Link>
       {isLoggedIn ? (
@@ -47,16 +51,12 @@ export function BottomNav({ isLoggedIn }: { isLoggedIn: boolean }) {
           className={`tab ${profileActive ? "active" : ""}`}
           aria-current={profileActive ? "page" : undefined}
         >
-          <span className="ticon" aria-hidden>
-            👤
-          </span>
+          {profileActive ? <IconUserFill /> : <IconUser />}
           프로필
         </Link>
       ) : (
         <button className="tab" onClick={() => setShowLoginPrompt(true)}>
-          <span className="ticon" aria-hidden>
-            👤
-          </span>
+          <IconUser />
           프로필
         </button>
       )}

@@ -10,6 +10,7 @@ import { VoiceRail, ShareStage } from "./VoiceRoom";
 import { RoomChat } from "./RoomChat";
 import { createClient } from "@/lib/supabase/client";
 import { isKakaoInApp, openExternalBrowser } from "@/lib/inapp";
+import { IconChat, IconPlus, IconTalk } from "./icons";
 import type { RoomMessage, RoomTopic, Stroke, Topic } from "@/lib/types";
 
 // LiveKit 연결 옵션 — 모바일/손실 네트워크 음질 튜닝.
@@ -229,14 +230,14 @@ export function RoomShell({
             className={pane === "stage" ? "on" : ""}
             onClick={() => setPane("stage")}
           >
-            🗣️ 토론
+            <IconTalk /> 토론
           </button>
           <button
             aria-pressed={pane === "chat"}
             className={pane === "chat" ? "on" : ""}
             onClick={() => setPane("chat")}
           >
-            💬 채팅
+            <IconChat /> 채팅
           </button>
         </div>
       </div>
@@ -298,7 +299,7 @@ export function RoomShell({
           </div>
         )}
         <button className="fab" onClick={() => setMenuOpen((v) => !v)}>
-          ＋ 도구
+          <IconPlus size={12} /> 도구
         </button>
       </div>
 
