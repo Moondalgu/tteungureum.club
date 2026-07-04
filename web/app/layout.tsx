@@ -56,6 +56,14 @@ export default async function RootLayout({
 
   return (
     <html lang="ko">
+      {/* React 19 가 <head> 로 호이스팅 — preconnect 로 CDN 연결을 미리 열고
+          폰트 CSS 를 앱 CSS 와 병렬 로드 (버전 핀: @latest 는 리다이렉트 비용) */}
+      <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+      <link
+        rel="stylesheet"
+        precedence="default"
+        href="https://cdn.jsdelivr.net/gh/quiple/galmuri@2.40.3/dist/galmuri.css"
+      />
       <body>
         <Sky />
         <AuthListener />

@@ -1,5 +1,7 @@
 /* ── Y2K 픽셀 테마 ───────────────────────────────────────── */
-@import url("https://cdn.jsdelivr.net/gh/quiple/galmuri@latest/dist/galmuri.css");
+/* Galmuri 폰트는 layout.tsx 의 <link rel="stylesheet"> 로 병렬 로드한다 —
+   @import 는 앱 CSS 수신 후에야 CDN 연결을 시작하는 직렬 체인이라
+   콜드 첫 방문 FCP 를 ~1초 지연시켰음 (preconnect + 버전 핀 고정) */
 
 /* ════════════════════════════════════════════════════════════
    디자인 토큰
@@ -248,7 +250,9 @@ header.topbar {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-14);
+  /* 24px 는 Galmuri11(12px 기반)의 ×2 — Galmuri14 를 24px 로 쓰면
+     비정수 스케일로 도트가 뭉개진다 (모바일 CI 깨짐 원인) */
+  font-family: var(--font-11);
   font-weight: 700;
   font-size: var(--fs-lg);
   color: #fff;
