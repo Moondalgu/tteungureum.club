@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { usePersistentToggle } from "@/lib/usePersistentToggle";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { LoginPromptModal } from "./LoginPromptModal";
 import { MeetingEditModal } from "./MeetingEditModal";
 import { ShareButton } from "./ShareButton";
+import { IconPlus } from "./icons";
 import type { Meeting, RoomMode } from "@/lib/types";
 
 function fmtDate(d: string | null) {
@@ -65,6 +67,9 @@ export function MeetingList({
 
   // 수정 모달 상태
   const [editing, setEditing] = useState<Meeting | null>(null);
+
+  // 모바일 FAB 용 로그인 유도 모달
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   // soft navigation(예: 헤더의 "방 만들기" → /?new=1) 시에는 컴포넌트가
   // 재마운트되지 않아 useState 초기값이 갱신되지 않는다. defaultOpen prop이
@@ -370,6 +375,30 @@ export function MeetingList({
           }}
         />
       )}
+
+      {/* 모바일 전용 방 만들기 FAB — 만들기는 목적지가 아닌 액션이므로
+          GNB 탭이 아니라 홈 화면 위에 띄운다 (Material FAB/당근마켓 글쓰기 패턴) */}
+      {!show && (
+        <button
+          className="fab home-fab mobile-only"
+          onClick={() => {
+            if (!isLoggedIn) return setShowLoginPrompt(true);
+            setShow(true);
+            document
+              .querySelector(".app-scroll")
+              ?.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        >
+          <IconPlus size={12} /> 방 만들기
+        </button>
+      )}
+
+      <LoginPromptModal
+        open={showLoginPrompt}
+        message="방을 만들려면 로그인이 필요해요. 로그인하면 바로 방 만들기로 이어집니다."
+        next="/?new=1"
+        onClose={() => setShowLoginPrompt(false)}
+      />
 
       <ConfirmDialog
         open={!!pendingDelete}

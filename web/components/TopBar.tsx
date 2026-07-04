@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { LoginPromptModal } from "./LoginPromptModal";
-import { BrandCloud } from "./icons";
+import { BrandCloud, IconChevronLeft } from "./icons";
 
 export function TopBar({
   isLoggedIn,
@@ -16,6 +17,19 @@ export function TopBar({
   avatarUrl: string | null;
 }) {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // 상세 화면(모임/토론방)에선 모바일 헤더가 "뒤로가기 + 섹션명"으로 바뀐다.
+  // 홈·탭 루트는 브랜드 유지 — "홈 = 로고, 상세 = 컨텍스트" 하이브리드(iOS HIG/국내앱 관행).
+  const isDetail = /^\/(meetings|rooms)\/[^/]+/.test(pathname);
+  const sectionTitle = pathname.startsWith("/rooms/") ? "토론방" : "모임";
+
+  // 공유 링크로 직진입해 히스토리가 없으면 홈으로 폴백
+  function goBack() {
+    if (window.history.length > 1) router.back();
+    else router.push("/");
+  }
 
   async function loginWithKakao() {
     const supabase = createClient();
@@ -34,22 +48,33 @@ export function TopBar({
 
   return (
     <header className="topbar">
-      <Link href="/" className="brand">
+      {isDetail && (
+        <div className="row mobile-only" style={{ gap: 8, minWidth: 0 }}>
+          <button className="backbtn" aria-label="뒤로가기" onClick={goBack}>
+            <IconChevronLeft />
+          </button>
+          <strong className="htitle">{sectionTitle}</strong>
+        </div>
+      )}
+      <Link href="/" className={`brand ${isDetail ? "desktop-only" : ""}`}>
         <BrandCloud />
         뜬구름클럽
       </Link>
-      {/* 모바일(<768px)에선 홈/N의상자/프로필이 하단 탭바로 내려가고,
-          상단바에는 핵심 CTA(방 만들기)와 로그인만 남긴다 */}
+      {/* 모바일(<768px)에선 내비가 하단 탭바로, 방 만들기는 홈 FAB 로 내려간다.
+          상단바 모바일 잔여물은 로그인 버튼뿐 */}
       <nav className="row">
         <Link href="/box" className="btn cyan desktop-only">
           N의 상자
         </Link>
         {isLoggedIn ? (
-          <Link href="/?new=1" className="btn primary">
+          <Link href="/?new=1" className="btn primary desktop-only">
             방 만들기
           </Link>
         ) : (
-          <button className="btn primary" onClick={() => setShowLoginPrompt(true)}>
+          <button
+            className="btn primary desktop-only"
+            onClick={() => setShowLoginPrompt(true)}
+          >
             방 만들기
           </button>
         )}

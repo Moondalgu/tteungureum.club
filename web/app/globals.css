@@ -225,6 +225,40 @@ header.topbar {
 }
 .brand svg { flex: 0 0 auto; }
 
+/* 상세 화면 모바일 헤더: 뒤로가기 + 섹션명 */
+.backbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border: 2px solid var(--ink);
+  border-radius: var(--r-ctl);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.backbtn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+.htitle {
+  font-family: var(--font-14);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 홈 전용 방 만들기 FAB — 하단 탭바 위, 썸존 */
+.home-fab {
+  position: fixed;
+  right: 14px;
+  bottom: calc(14px + var(--tabbar-h) + var(--safe-b));
+  z-index: 40;
+}
+
 /* ── 모바일 하단 탭바 (<768px) ──
    body 플렉스 흐름의 마지막 자식으로 두어 .app-scroll 이 알아서 줄어든다.
    데스크톱에선 숨기고 상단바가 같은 항목을 담당한다 (IA 동일, 배치만 다름) */
